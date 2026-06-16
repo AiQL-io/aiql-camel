@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local-only docs & design references (not shipped)
+/MANHAL_BUILD_PLAN.md
+/design-system-reference/
+/AGENTS.md
+/CLAUDE.md

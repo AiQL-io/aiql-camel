@@ -1,4 +1,16 @@
-import { testSingleParent } from "@/imports/core/engine/parentage.js";
+import {
+  testSingleParent,
+  testTrio,
+  verifyParentage,
+  trioDetail,
+  cpeOverLoci,
+} from "@/imports/core/engine/parentage.js";
+import {
+  relatednessPair,
+  freqByLocusFromPanel,
+} from "@/imports/core/engine/relatedness.js";
+import { rankCandidates } from "@/imports/core/engine/reverseSearch.js";
+import { auditEdges as runAuditEdges } from "@/imports/core/engine/audit.js";
 
 function hash01(str) {
   let h = 2166136261;
@@ -305,38 +317,81 @@ export function createAccess(dataset) {
     return { sire, dam, offspring, fullSibs };
   }
 
-  function rankedRelatives(id) {
-    const a = byId.get(id);
-    if (!a) return [];
-    const loci = profByCamel.get(id)?.genotypes.length || panel.loci.length;
-    const out = [];
-    const seen = new Set();
-    const add = (animal, r, rel) => {
-      if (!animal || animal.id === id || seen.has(animal.id)) return;
-      seen.add(animal.id);
-      out.push({ animal, r, inferred: rel, loci });
-    };
-    const { sire, dam, offspring, fullSibs } = relatives(id);
-    add(sire, 0.5, "Parent–offspring");
-    add(dam, 0.5, "Parent–offspring");
-    offspring.forEach((o) => add(o, 0.5, "Parent–offspring"));
-    fullSibs.forEach((s) => add(s, 0.5, "Full sibling"));
-    // Half siblings: share exactly one true parent.
-    for (const other of animals) {
-      if (other.id === id || seen.has(other.id)) continue;
-      const shareSire = a._trueSireId && other._trueSireId === a._trueSireId;
-      const shareDam = a._trueDamId && other._trueDamId === a._trueDamId;
-      if ((shareSire || shareDam) && !(shareSire && shareDam))
-        add(other, 0.25, "Half sibling");
+  const freqByLocus = freqByLocusFromPanel(panel);
+  // Shared ComputedRelationship cache (Master §5.1), keyed by
+  // (animalA, animalB, panelId, estimator) so PopGen/Verification can reuse it.
+  const relCache = new Map();
+  function pairKey(x, y, estimator) {
+    const pair = x < y ? `${x}|${y}` : `${y}|${x}`;
+    return `${pair}|${panel.id}|${estimator}`;
+  }
+  const ZERO_IBS = { share0: 0, share1: 0, share2: 0 };
+  function relatednessTo(aId, bId, { estimator = "lr" } = {}) {
+    if (aId === bId)
+      return {
+        r: 1,
+        kinship: 0.5,
+        inferred: "Self",
+        loci: panel.loci.length,
+        ibs: { ...ZERO_IBS },
+        confidence: "n/a",
+      };
+    const key = pairKey(aId, bId, estimator);
+    if (relCache.has(key)) return relCache.get(key);
+    const pa = profByCamel.get(aId);
+    const pb = profByCamel.get(bId);
+    if (!pa || !pb) {
+      const none = {
+        r: 0,
+        kinship: 0,
+        inferred: "Unrelated",
+        loci: 0,
+        ibs: { ...ZERO_IBS },
+        confidence: "insufficient loci",
+      };
+      relCache.set(key, none);
+      return none;
     }
-    return out.sort((x, y) => y.r - x.r);
+    const res = relatednessPair(
+      pa.genotypes,
+      pb.genotypes,
+      freqByLocus,
+      estimator,
+    );
+    const out = {
+      r: res.r,
+      kinship: res.kinship,
+      inferred: res.category,
+      loci: res.lociUsed,
+      ibs: res.ibs,
+      confidence: res.confidence,
+      estimator,
+    };
+    relCache.set(key, out);
+    return out;
   }
 
-  function relatednessTo(aId, bId) {
-    if (aId === bId) return { r: 1, inferred: "Self", loci: panel.loci.length };
-    const rel = rankedRelatives(aId).find((x) => x.animal.id === bId);
-    if (rel) return { r: rel.r, inferred: rel.inferred, loci: rel.loci };
-    return { r: 0.02, inferred: "Unrelated", loci: panel.loci.length };
+  const rankedRelCache = new Map();
+  function rankedRelatives(id, { limit = 12, threshold = 0.12 } = {}) {
+    if (rankedRelCache.has(id)) return rankedRelCache.get(id);
+    const prof = profByCamel.get(id);
+    if (!prof) return [];
+    const out = [];
+    for (const other of animals) {
+      if (other.id === id || !profByCamel.get(other.id)) continue;
+      const rel = relatednessTo(id, other.id);
+      if (rel.r >= threshold)
+        out.push({
+          animal: other,
+          r: rel.r,
+          inferred: rel.inferred,
+          loci: rel.loci,
+        });
+    }
+    out.sort((x, y) => y.r - x.r);
+    const top = out.slice(0, limit);
+    rankedRelCache.set(id, top);
+    return top;
   }
 
   function pedigree(id) {
@@ -367,6 +422,108 @@ export function createAccess(dataset) {
         conflict: Boolean(decDam && bioDam && decDam.id !== bioDam.id),
       },
     };
+  }
+
+  function verify(offspringId, parentId, opts = {}) {
+    const off = profByCamel.get(offspringId);
+    const par = profByCamel.get(parentId);
+    if (!off || !par) return null;
+    return verifyParentage(off, par, panel, freqByLocus, opts);
+  }
+
+  function verifyTrio(offspringId, sireId, damId, opts = {}) {
+    const off = profByCamel.get(offspringId);
+    const s = profByCamel.get(sireId);
+    const d = profByCamel.get(damId);
+    if (!off || !s || !d) return null;
+    const res = testTrio(off, s, d, opts);
+    const detail = trioDetail(off, s, d);
+    const cpe = cpeOverLoci(
+      panel,
+      detail.map((x) => x.locus),
+    );
+    return { ...res, cpe, detail };
+  }
+
+  function reverseSearch(
+    offspringId,
+    {
+      target = "sire",
+      tolerance = 1,
+      minParentAge = 3,
+      region = "",
+      owner = "",
+      otherParentId = "",
+    } = {},
+  ) {
+    const off = byId.get(offspringId);
+    const offProf = profByCamel.get(offspringId);
+    if (!off || !offProf)
+      return { error: "offspring-unprofiled", poolSize: 0, survivors: [] };
+    const wantSex = target === "dam" ? "female" : "male";
+    const otherProf = otherParentId ? profByCamel.get(otherParentId) : null;
+    const candidates = [];
+    for (const a of animals) {
+      if (a.id === offspringId) continue;
+      if (target !== "both" && a.sex !== wantSex) continue;
+      if (!a.hasDNA) continue;
+      if (a.birthYear > off.birthYear - minParentAge) continue;
+      if (region && a.region !== region) continue;
+      if (owner && a.ownerId !== owner) continue;
+      const prof = profByCamel.get(a.id);
+      if (!prof) continue;
+      candidates.push({ animal: a, genotypes: prof.genotypes });
+    }
+    return rankCandidates({
+      offspringGenotypes: offProf.genotypes,
+      candidates,
+      freqByLocus,
+      tolerance,
+      otherParentGenotypes: otherProf ? otherProf.genotypes : null,
+    });
+  }
+
+  // Build the list of declared edges to audit (cheap — no verdicts yet).
+  function buildAuditEdges({ scope = "sire", ids = null } = {}) {
+    const targets = ids ? ids.map((i) => byId.get(i)).filter(Boolean) : animals;
+    const edges = [];
+    for (const a of targets) {
+      const offProf = profByCamel.get(a.id);
+      const pushEdge = (parentId, role) => {
+        if (!parentId) return;
+        const parentProf = profByCamel.get(parentId);
+        const parent = byId.get(parentId);
+        edges.push({
+          offspringId: a.id,
+          parentId,
+          role,
+          offspringGenotypes: offProf ? offProf.genotypes : null,
+          parentGenotypes: parentProf ? parentProf.genotypes : null,
+          meta: {
+            offspring: a.registrationId,
+            offspringName: a.name,
+            parent: parent ? parent.registrationId : "—",
+            region: a.region,
+            breed: a.breed,
+            ownerName: a.ownerName,
+          },
+        });
+      };
+      if (scope === "sire" || scope === "both")
+        pushEdge(a.registeredParentSireId, "sire");
+      if (scope === "dam" || scope === "both")
+        pushEdge(a.registeredParentDamId, "dam");
+    }
+    return edges;
+  }
+
+  // Verify a (chunk of) pre-built edges — used for incremental, cancellable audits.
+  function auditEdgeList(edges, { tolerance = 1 } = {}) {
+    return runAuditEdges(edges, { tolerance });
+  }
+
+  function auditEdges({ scope = "sire", tolerance = 1, ids = null } = {}) {
+    return runAuditEdges(buildAuditEdges({ scope, ids }), { tolerance });
   }
 
   function search({
@@ -498,6 +655,13 @@ export function createAccess(dataset) {
     rankedRelatives,
     relatednessTo,
     pedigree,
+    verify,
+    verifyTrio,
+    reverseSearch,
+    auditEdges,
+    buildAuditEdges,
+    auditEdgeList,
+    freqByLocus,
     flagsFor: (id) => byId.get(id)?.integrityFlags || [],
     parentageStatusOf: (id) => byId.get(id)?.parentageStatus || "unknown",
     inbreedingPercentile,

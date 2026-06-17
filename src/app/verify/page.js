@@ -1,5 +1,5 @@
-import { ModulePlaceholder } from "@/imports/core/components/ModulePlaceholder.jsx";
+import WorkbenchPage from "@/imports/verify/ui/pages/WorkbenchPage.jsx";
 
 export default function Page() {
-  return <ModulePlaceholder icon="git-fork" titleKey="nav.verify" />;
+  return <WorkbenchPage />;
 }

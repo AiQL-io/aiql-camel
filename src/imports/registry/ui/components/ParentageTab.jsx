@@ -30,7 +30,7 @@ export function ParentageTab({
     <>
       <TwoPanel>
         <Card>
-          <Overline style={{ marginBottom: 6 }}>Registry-declared</Overline>
+          <PanelTitle>Registry-declared</PanelTitle>
           <ParentLine
             role="Declared sire"
             parent={declaredSire}
@@ -43,7 +43,7 @@ export function ParentageTab({
           />
         </Card>
         <Card>
-          <Overline style={{ marginBottom: 6 }}>Biology-confirmed</Overline>
+          <PanelTitle>Biology-confirmed</PanelTitle>
           <ParentLine
             role="Biological sire"
             parent={bioSire}
@@ -65,13 +65,27 @@ export function ParentageTab({
           </Link>
         </ConflictBar>
       )}
-      <Card style={{ marginTop: 12 }}>
-        <Overline style={{ marginBottom: 14 }}>Pedigree</Overline>
+      <PedigreeCard>
+        <PedigreeTitle>Pedigree</PedigreeTitle>
         <PedigreeTree ped={pedigree} />
-      </Card>
+      </PedigreeCard>
     </>
   );
 }
+
+const PanelTitle = styled(Overline)`
+  display: block;
+  margin-bottom: 6px;
+`;
+
+const PedigreeCard = styled(Card)`
+  margin-top: 12px;
+`;
+
+const PedigreeTitle = styled(Overline)`
+  display: block;
+  margin-bottom: 14px;
+`;
 
 const TwoPanel = styled.div`
   display: grid;

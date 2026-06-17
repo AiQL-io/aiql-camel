@@ -29,7 +29,7 @@ export function ProfileHeader({ animal, flags, can }) {
             <span className="sub">chip {animal.microchipId}</span>
             <span className="dot">·</span>
             <span className="swatch">
-              <i style={{ background: COAT[animal.coatColor] || "#999" }} />
+              <Swatch $color={COAT[animal.coatColor] || "#999"} />
               {animal.coatColor}
             </span>
             <span className="dot">·</span>
@@ -44,7 +44,7 @@ export function ProfileHeader({ animal, flags, can }) {
             <Chip size="sm" tone={animal.hasDNA ? "accent" : "default"}>
               {animal.hasDNA ? "DNA on file" : "No DNA"}
             </Chip>
-            <Chip
+            <CapChip
               size="sm"
               tone={
                 parentVerified
@@ -53,22 +53,17 @@ export function ProfileHeader({ animal, flags, can }) {
                     ? "danger"
                     : "default"
               }
-              style={{ textTransform: "capitalize" }}
             >
               Parentage {animal.parentageStatus}
-            </Chip>
+            </CapChip>
             {flags.length > 0 && (
               <Chip size="sm" tone="danger">
                 {flags.length} integrity {flags.length === 1 ? "flag" : "flags"}
               </Chip>
             )}
-            <Chip
-              size="sm"
-              tone={STATUS_TONE[animal.status]}
-              style={{ textTransform: "capitalize" }}
-            >
+            <CapChip size="sm" tone={STATUS_TONE[animal.status]}>
               {animal.status}
-            </Chip>
+            </CapChip>
           </div>
         </div>
       </div>
@@ -132,6 +127,18 @@ export function ProfileHeader({ animal, flags, can }) {
   );
 }
 
+const CapChip = styled(Chip)`
+  text-transform: capitalize;
+`;
+
+const Swatch = styled.i`
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  background: ${(p) => p.$color};
+`;
+
 const Head = styled.div`
   display: flex;
   align-items: flex-start;
@@ -177,12 +184,6 @@ const Head = styled.div`
     gap: 6px;
     font-size: var(--text-sm);
     color: var(--fg-secondary);
-  }
-  .meta .swatch i {
-    width: 12px;
-    height: 12px;
-    border-radius: 3px;
-    border: 1px solid var(--border);
   }
   .chips {
     display: flex;

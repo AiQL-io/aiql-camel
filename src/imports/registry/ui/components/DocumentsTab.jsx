@@ -11,7 +11,7 @@ import { Overline } from "@/imports/core/components/Overline.jsx";
 export function DocumentsTab({ animal }) {
   return (
     <Card>
-      <Overline style={{ marginBottom: 12 }}>Certificates & reports</Overline>
+      <DocsTitle>Certificates & reports</DocsTitle>
       <DocsEmpty>
         <Icon name="certificate" size={28} color="var(--fg-muted)" />
         <p>No documents issued for this animal yet.</p>
@@ -28,6 +28,11 @@ export function DocumentsTab({ animal }) {
     </Card>
   );
 }
+
+const DocsTitle = styled(Overline)`
+  display: block;
+  margin-bottom: 12px;
+`;
 
 const DocsEmpty = styled.div`
   display: flex;

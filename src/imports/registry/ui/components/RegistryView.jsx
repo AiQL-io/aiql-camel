@@ -348,7 +348,14 @@ export function RegistryView({ access }) {
             >
               <Icon name="file-xls" size={14} /> XLSX
             </button>
-            <button type="button" onClick={() => router.push("/verify/batch")}>
+            <button
+              type="button"
+              onClick={() =>
+                router.push(
+                  `/verify/batch?ids=${[...reg.selected].join(",")}`,
+                )
+              }
+            >
               <Icon name="git-fork" size={14} /> Batch verify
             </button>
             <button type="button" onClick={() => router.push("/reports")}>

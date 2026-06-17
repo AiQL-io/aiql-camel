@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import styled from "styled-components";
+import styled, { keyframes } from "styled-components";
 import { Icon } from "./Icon.jsx";
 
 export function Drawer({ open, onClose, title, width = 420, children }) {
@@ -12,10 +12,12 @@ export function Drawer({ open, onClose, title, width = 420, children }) {
     return () => document.removeEventListener("keydown", onKey);
   }, [open, onClose]);
 
+  if (!open) return null;
+
   return (
-    <Root $open={open} aria-hidden={!open}>
-      <Scrim onClick={onClose} $open={open} />
-      <Panel $open={open} $width={width} role="dialog" aria-modal="true">
+    <Root>
+      <Scrim onClick={onClose} />
+      <Panel $width={width} role="dialog" aria-modal="true">
         <Head>
           <span className="title">{title}</span>
           <button type="button" onClick={onClose} aria-label="Close">
@@ -28,19 +30,30 @@ export function Drawer({ open, onClose, title, width = 420, children }) {
   );
 }
 
+const fadeIn = keyframes`
+  from { opacity: 0; }
+  to { opacity: 1; }
+`;
+const slideIn = keyframes`
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+`;
+const slideInRtl = keyframes`
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+`;
+
 const Root = styled.div`
   position: fixed;
   inset: 0;
   z-index: 200;
-  pointer-events: ${(p) => (p.$open ? "auto" : "none")};
 `;
 
 const Scrim = styled.div`
   position: absolute;
   inset: 0;
   background: var(--scrim, rgba(0, 0, 0, 0.4));
-  opacity: ${(p) => (p.$open ? 1 : 0)};
-  transition: opacity 180ms ease;
+  animation: ${fadeIn} 160ms ease both;
 `;
 
 const Panel = styled.aside`
@@ -53,13 +66,12 @@ const Panel = styled.aside`
   background: var(--surface);
   border-inline-start: 1px solid var(--border);
   box-shadow: var(--shadow-popover);
-  transform: translateX(${(p) => (p.$open ? "0" : "100%")});
-  transition: transform 220ms cubic-bezier(0.32, 0.72, 0, 1);
   display: flex;
   flex-direction: column;
+  animation: ${slideIn} 220ms cubic-bezier(0.32, 0.72, 0, 1) both;
 
   [dir="rtl"] & {
-    transform: translateX(${(p) => (p.$open ? "0" : "-100%")});
+    animation-name: ${slideInRtl};
   }
 `;
 

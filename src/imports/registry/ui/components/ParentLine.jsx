@@ -19,16 +19,12 @@ export function ParentLine({ role, parent, check }) {
           <span className="none">Not recorded</span>
         )}
       </div>
-      <div style={{ textAlign: "end" }}>
+      <RightCol>
         {check ? (
           <>
-            <Chip
-              size="sm"
-              tone={VERDICT_TONE[check.verdict]}
-              style={{ textTransform: "capitalize" }}
-            >
+            <CapChip size="sm" tone={VERDICT_TONE[check.verdict]}>
               {check.verdict}
-            </Chip>
+            </CapChip>
             <div className="verdict">
               {check.lociCompared} loci · {check.mismatchCount} mismatch
               {check.mismatchCount === 1 ? "" : "es"}
@@ -37,10 +33,18 @@ export function ParentLine({ role, parent, check }) {
         ) : (
           <Chip size="sm">no test</Chip>
         )}
-      </div>
+      </RightCol>
     </ParentRow>
   );
 }
+
+const RightCol = styled.div`
+  text-align: end;
+`;
+
+const CapChip = styled(Chip)`
+  text-transform: capitalize;
+`;
 
 const ParentRow = styled.div`
   display: flex;

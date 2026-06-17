@@ -16,7 +16,7 @@ export function OverviewTab({
   return (
     <OverviewGrid>
       <Card>
-        <Overline style={{ marginBottom: 12 }}>Genetic snapshot</Overline>
+        <SnapshotTitle>Genetic snapshot</SnapshotTitle>
         <Snapshot>
           <div className="big">
             F {animal.inbreedingF}
@@ -24,7 +24,7 @@ export function OverviewTab({
           </div>
           <div className="pct">
             <div className="bar">
-              <span style={{ width: `${animal.inbreedingPercentile}%` }} />
+              <Bar $pct={animal.inbreedingPercentile} />
             </div>
             <div className="cap">
               More inbred than {animal.inbreedingPercentile}% of the population
@@ -51,7 +51,7 @@ export function OverviewTab({
         </Counts>
       </Card>
       <Card>
-        <Overline style={{ marginBottom: 8 }}>Relationship preview</Overline>
+        <RelTitle>Relationship preview</RelTitle>
         {rankedRelatives.length ? (
           <EgoNetwork focal={animal} relatives={rankedRelatives} />
         ) : (
@@ -61,6 +61,23 @@ export function OverviewTab({
     </OverviewGrid>
   );
 }
+
+const SnapshotTitle = styled(Overline)`
+  display: block;
+  margin-bottom: 12px;
+`;
+
+const RelTitle = styled(Overline)`
+  display: block;
+  margin-bottom: 8px;
+`;
+
+const Bar = styled.span`
+  display: block;
+  height: 100%;
+  width: ${(p) => p.$pct}%;
+  background: var(--accent);
+`;
 
 const OverviewGrid = styled.div`
   display: grid;
@@ -101,11 +118,6 @@ const Snapshot = styled.div`
     border-radius: 4px;
     background: var(--surface-2);
     overflow: hidden;
-  }
-  .pct .bar span {
-    display: block;
-    height: 100%;
-    background: var(--accent);
   }
   .pct .cap {
     font-size: var(--text-xs);

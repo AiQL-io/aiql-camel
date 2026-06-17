@@ -44,7 +44,7 @@ export function RelativesTab({ animal, rankedRelatives }) {
         </div>
       </Card>
       <Card>
-        <Overline style={{ marginBottom: 8 }}>Ego-network</Overline>
+        <EgoTitle>Ego-network</EgoTitle>
         {rankedRelatives.length ? (
           <EgoNetwork focal={animal} relatives={rankedRelatives} />
         ) : (
@@ -54,6 +54,11 @@ export function RelativesTab({ animal, rankedRelatives }) {
     </RelGrid>
   );
 }
+
+const EgoTitle = styled(Overline)`
+  display: block;
+  margin-bottom: 8px;
+`;
 
 const RelGrid = styled.div`
   display: grid;

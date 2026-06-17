@@ -18,7 +18,7 @@ export function IntegrityTab({ flags }) {
         <FlagList>
           {flags.map((f, i) => (
             <div key={i} className="flag">
-              <Chip
+              <SevChip
                 size="sm"
                 tone={
                   f.sev === "critical"
@@ -27,10 +27,9 @@ export function IntegrityTab({ flags }) {
                       ? "warning"
                       : "default"
                 }
-                style={{ textTransform: "capitalize", flex: "none" }}
               >
                 {f.sev}
-              </Chip>
+              </SevChip>
               <span>
                 <b>{f.type}</b>
                 <i>{f.detail}</i>
@@ -42,6 +41,11 @@ export function IntegrityTab({ flags }) {
     </Card>
   );
 }
+
+const SevChip = styled(Chip)`
+  text-transform: capitalize;
+  flex: none;
+`;
 
 const OkRow = styled.div`
   display: flex;

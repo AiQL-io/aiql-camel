@@ -61,7 +61,7 @@ export function DnaTab({
       </DnaMeta>
 
       {compareAnimal ? (
-        <div style={{ marginTop: 16 }}>
+        <CompareSection>
           <CompareStrip
             rows={[
               {
@@ -76,7 +76,7 @@ export function DnaTab({
               },
             ]}
           />
-        </div>
+        </CompareSection>
       ) : (
         <DnaGrid>
           {profile.genotypes.map((g) => (
@@ -98,6 +98,10 @@ export function DnaTab({
     </Card>
   );
 }
+
+const CompareSection = styled.div`
+  margin-top: 16px;
+`;
 
 const DnaHead = styled.div`
   display: flex;

@@ -29,7 +29,7 @@ export function CamelProfileView({ access, id }) {
         <Link href="/registry" className="back">
           <Icon name="arrow-left" size={14} /> Registry
         </Link>
-        <h1 style={{ marginTop: 16 }}>Animal not found</h1>
+        <NotFoundHeading>Animal not found</NotFoundHeading>
       </Wrap>
     );
   }
@@ -118,6 +118,10 @@ export function CamelProfileView({ access, id }) {
     </Wrap>
   );
 }
+
+const NotFoundHeading = styled.h1`
+  margin-top: 16px;
+`;
 
 const Wrap = styled.div`
   .back {

@@ -3,6 +3,7 @@ import "./globals.css";
 import StyledComponentsRegistry from "@/lib/registry";
 import { ThemeProvider } from "@/imports/core/providers/ThemeProvider.jsx";
 import { I18nProvider } from "@/imports/core/providers/I18nProvider.jsx";
+import { RoleProvider } from "@/imports/core/providers/RoleProvider.jsx";
 import { Shell } from "@/imports/core/components/Shell.jsx";
 
 const dmSans = DM_Sans({
@@ -49,7 +50,9 @@ export default function RootLayout({ children }) {
         <StyledComponentsRegistry>
           <ThemeProvider>
             <I18nProvider>
-              <Shell>{children}</Shell>
+              <RoleProvider>
+                <Shell>{children}</Shell>
+              </RoleProvider>
             </I18nProvider>
           </ThemeProvider>
         </StyledComponentsRegistry>

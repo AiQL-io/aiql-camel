@@ -7,9 +7,14 @@ import { Chip } from "@/imports/core/components/Chip.jsx";
 import { Icon } from "@/imports/core/components/Icon.jsx";
 import { Overline } from "@/imports/core/components/Overline.jsx";
 import { SectionCard } from "./SectionCard.jsx";
-import { ALERTS, SEV_TONE, ACTIVITY } from "./data.js";
+import { SEV_TONE } from "./data.js";
 
-export function IntelligenceHighlights({ executive }) {
+export function IntelligenceHighlights({
+  executive,
+  alerts = [],
+  clusters,
+  activity = [],
+}) {
   return (
     <Row $executive={executive}>
       <SectionCard
@@ -17,8 +22,8 @@ export function IntelligenceHighlights({ executive }) {
         action={<Link href="/integrity">View all →</Link>}
       >
         <AlertList>
-          {ALERTS.slice(0, executive ? 3 : 5).map((a, i) => (
-            <Link key={i} href="/integrity">
+          {alerts.slice(0, executive ? 3 : 5).map((a) => (
+            <Link key={a.id} href={`/registry/${a.id}`}>
               <Chip tone={SEV_TONE[a.sev]} size="sm">
                 {a.sev}
               </Chip>
@@ -30,6 +35,9 @@ export function IntelligenceHighlights({ executive }) {
               </span>
             </Link>
           ))}
+          {alerts.length === 0 && (
+            <span className="empty">No open integrity alerts.</span>
+          )}
         </AlertList>
       </SectionCard>
 
@@ -39,28 +47,37 @@ export function IntelligenceHighlights({ executive }) {
       >
         <Clusters>
           <div className="count">
-            <b>14</b>
-            <span>clusters detected</span>
+            <b>{clusters?.count ?? 0}</b>
+            <span>over-related clusters</span>
           </div>
-          <Link href="/genetics" className="largest">
-            <Overline>Largest cluster</Overline>
-            <div className="name">Majaheem · Stable 7</div>
-            <div className="stat">38 animals · mean r 0.31</div>
-          </Link>
+          {clusters?.largest ? (
+            <Link href="/genetics" className="largest">
+              <Overline>Largest cluster</Overline>
+              <div className="name">{clusters.largest.owner?.name}</div>
+              <div className="stat">
+                {clusters.largest.size} animals · mean F{" "}
+                {clusters.largest.meanF}
+              </div>
+            </Link>
+          ) : (
+            <div className="none">
+              No over-related clusters above threshold.
+            </div>
+          )}
         </Clusters>
       </SectionCard>
 
       {!executive && (
         <SectionCard title="Activity">
           <Feed>
-            {ACTIVITY.map((a, i) => (
+            {activity.map((a, i) => (
               <Link key={i} href={a.href}>
                 <span className="ic">
                   <Icon name={a.icon} size={16} />
                 </span>
                 <span className="text">
                   <b>{a.text}</b>
-                  <span>{a.time} ago</span>
+                  <span>{a.sub}</span>
                 </span>
               </Link>
             ))}
@@ -106,6 +123,10 @@ const AlertList = styled.div`
     font-size: var(--text-xs);
     color: var(--fg-subtle);
   }
+  .empty {
+    font-size: var(--text-sm);
+    color: var(--fg-subtle);
+  }
 `;
 
 const Clusters = styled.div`
@@ -138,6 +159,11 @@ const Clusters = styled.div`
     font-size: var(--text-xs);
     color: var(--fg-subtle);
     margin-top: 4px;
+  }
+  .none {
+    margin-top: 14px;
+    font-size: var(--text-sm);
+    color: var(--fg-subtle);
   }
 `;
 

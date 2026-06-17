@@ -5,14 +5,13 @@ import Link from "next/link";
 import styled from "styled-components";
 import { Card } from "@/imports/core/components/Card.jsx";
 import { StatTile } from "@/imports/core/components/StatTile.jsx";
-import { heroBand } from "./data.js";
 
-export function HeroBand({ period }) {
+export function HeroBand({ tiles = [] }) {
   return (
     <Band>
       <Card padding={0}>
         <Grid>
-          {heroBand(period).map((s) => (
+          {tiles.map((s) => (
             <Link key={s.label} href={s.href}>
               <StatTile {...s} />
             </Link>

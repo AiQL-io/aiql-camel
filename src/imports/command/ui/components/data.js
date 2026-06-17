@@ -1,110 +1,3 @@
-const VERIF_BY_PERIOD = { 30: "118", 90: "318", 365: "1,190", all: "4,820" };
-
-export const heroBand = (period) => [
-  {
-    href: "/registry",
-    label: "Registered camels",
-    value: "40,000",
-    delta: "+1,240",
-    deltaTone: "up",
-    spark: [30, 32, 31, 34, 36, 38, 40],
-    sparkColor: "var(--accent)",
-  },
-  {
-    href: "/registry",
-    label: "DNA profiles on file",
-    value: "39,210",
-    delta: "98%",
-    deltaTone: "neutral",
-    spark: [29, 31, 31, 33, 35, 37, 39],
-    sparkColor: "var(--accent)",
-  },
-  {
-    href: "/verify",
-    label: `Verifications · ${period === "all" ? "all" : period + "d"}`,
-    value: VERIF_BY_PERIOD[period],
-    delta: "+46",
-    deltaTone: "up",
-    spark: [180, 210, 240, 260, 285, 300, 318],
-    sparkColor: "var(--accent)",
-  },
-  {
-    href: "/genetics",
-    label: "Genetic diversity index",
-    value: "72.3",
-    unit: "/100",
-    delta: "+2.9",
-    deltaTone: "up",
-    spark: [66, 67, 69, 68, 70, 71, 72],
-    sparkColor: "var(--status-success)",
-  },
-  {
-    href: "/integrity",
-    label: "Open integrity alerts",
-    value: "164",
-    delta: "23 critical",
-    deltaTone: "down",
-    spark: [120, 130, 140, 150, 158, 160, 164],
-    sparkColor: "var(--status-danger)",
-  },
-  {
-    href: "/genetics",
-    label: "Mean inbreeding",
-    value: "0.08",
-    delta: "−0.01",
-    deltaTone: "up",
-    spark: [0.11, 0.1, 0.1, 0.09, 0.09, 0.08, 0.08],
-    sparkColor: "var(--status-success)",
-  },
-];
-
-export const REGIONS = [
-  { label: "Riyadh", value: 9800 },
-  { label: "Eastern Province", value: 6400 },
-  { label: "Qassim", value: 5200 },
-  { label: "Makkah", value: 4300 },
-  { label: "Hail", value: 3600 },
-  { label: "Najran", value: 3100 },
-  { label: "Tabuk", value: 2400 },
-  { label: "Asir", value: 1900 },
-];
-
-export const HET_BINS = [2, 5, 9, 14, 18, 16, 12, 7, 4, 2];
-export const INBR_BINS = [22, 17, 13, 10, 7, 5, 3, 2, 1];
-
-export const ALERTS = [
-  {
-    sev: "critical",
-    type: "Impossible parentage",
-    subject: "SCC-2021-04412",
-    detail: "declared sire excluded · 6 loci",
-  },
-  {
-    sev: "critical",
-    type: "Impossible parentage",
-    subject: "SCC-2020-01188",
-    detail: "declared sire excluded · 5 loci",
-  },
-  {
-    sev: "high",
-    type: "Missing maternal",
-    subject: "SCC-2022-07731",
-    detail: "dam not recorded",
-  },
-  {
-    sev: "high",
-    type: "Duplicate suspected",
-    subject: "SCC-2019-00942",
-    detail: "near-identical profile",
-  },
-  {
-    sev: "medium",
-    type: "Incomplete profile",
-    subject: "SCC-2023-11020",
-    detail: "9 / 14 core loci typed",
-  },
-];
-
 export const SEV_TONE = {
   critical: "danger",
   high: "warning",
@@ -112,32 +5,120 @@ export const SEV_TONE = {
   low: "default",
 };
 
-export const ACTIVITY = [
-  {
-    icon: "git-fork",
-    text: "Reverse search confirmed sire for SCC-2022-06610",
-    time: "12m",
-    href: "/verify",
-  },
-  {
-    icon: "certificate",
-    text: "Parentage certificate issued · SCC-2021-03390",
-    time: "48m",
-    href: "/reports",
-  },
-  {
-    icon: "identification-card",
-    text: "Record updated · SCC-2020-00781",
-    time: "2h",
-    href: "/registry",
-  },
-  {
-    icon: "shield-check",
-    text: "Alert resolved · duplicate dismissed",
-    time: "3h",
-    href: "/integrity",
-  },
-];
+function buildActivity(access) {
+  const animals = access.animals;
+  const items = [];
+  const conflict = animals.find((a) => a.parentageStatus === "conflict");
+  if (conflict)
+    items.push({
+      icon: "flag",
+      text: `Impossible parentage flagged · ${conflict.registrationId}`,
+      sub: `${conflict.breed} · ${conflict.region}`,
+      href: "/integrity",
+    });
+  const dup = animals.find((a) => a._duplicateOf);
+  if (dup)
+    items.push({
+      icon: "copy",
+      text: `Duplicate suspected · ${dup.registrationId}`,
+      sub: dup.ownerName,
+      href: "/integrity",
+    });
+  const recent = animals
+    .filter((a) => a.hasDNA)
+    .slice(-3)
+    .reverse();
+  recent.forEach((a) =>
+    items.push({
+      icon: "dna",
+      text: `DNA profile on file · ${a.registrationId}`,
+      sub: `${a.breed} · ${a.ownerName}`,
+      href: `/registry/${a.id}`,
+    }),
+  );
+  return items.slice(0, 5);
+}
+
+function spark(dir, n = 7) {
+  const pts = [];
+  for (let i = 0; i < n; i++) {
+    const t = i / (n - 1);
+    const base = dir > 0 ? 0.55 + 0.45 * t : 1 - 0.4 * t;
+    const noise = (((Math.sin((i + 1) * 12.9898) * 43758.5453) % 1) + 1) % 1;
+    pts.push(+(base + noise * 0.08 - 0.04).toFixed(3));
+  }
+  return pts;
+}
+
+export function buildCommandData(access, period) {
+  const s = access.summary();
+  const d = access.diversity;
+  const periodLabel = period === "all" ? "all" : `${period}d`;
+
+  const hero = [
+    {
+      href: "/registry",
+      label: "Registered camels",
+      value: s.total.toLocaleString(),
+      spark: spark(1),
+      sparkColor: "var(--accent)",
+    },
+    {
+      href: "/registry",
+      label: "DNA profiles on file",
+      value: s.profiled.toLocaleString(),
+      unit: `${Math.round((s.profiled / Math.max(1, s.total)) * 100)}%`,
+      spark: spark(1),
+      sparkColor: "var(--accent)",
+    },
+    {
+      href: "/verify",
+      label: `Profiles analyzed · ${periodLabel}`,
+      value: access.analyzedCount(period).toLocaleString(),
+      spark: spark(1),
+      sparkColor: "var(--accent)",
+    },
+    {
+      href: "/genetics",
+      label: "Genetic diversity index",
+      value: d.gdi,
+      unit: "/100",
+      spark: spark(1),
+      sparkColor: "var(--status-success)",
+    },
+    {
+      href: "/integrity",
+      label: "Open integrity alerts",
+      value: s.alerts.toLocaleString(),
+      delta: `${s.critical} critical`,
+      deltaTone: "down",
+      spark: spark(1),
+      sparkColor: "var(--status-danger)",
+    },
+    {
+      href: "/genetics",
+      label: "Mean inbreeding",
+      value: s.meanF.toFixed(2),
+      spark: spark(-1),
+      sparkColor: "var(--status-success)",
+    },
+  ];
+
+  return {
+    hero,
+    regions: access
+      .regionCounts()
+      .slice(0, 8)
+      .map((r) => ({ label: r.region, value: r.count })),
+    hetBins: d.hetBins,
+    inbrBins: d.inbreedingBins,
+    richnessGauge: Math.round(Math.min(d.meanRichness / 20, 1) * 100),
+    meanRichness: d.meanRichness,
+    alerts: access.topAlerts(5),
+    clusters: access.clusters(),
+    activity: buildActivity(access),
+  };
+}
 
 export const LIVE_MODULES = [
   {
@@ -146,8 +127,8 @@ export const LIVE_MODULES = [
     icon: "identification-card",
     title: "DNA Identity Registry",
     desc: "Every camel, anchored to its DNA fingerprint.",
-    stat: "40,000 profiles",
-    sub: "1,240 added this quarter",
+    stat: "Browse & search",
+    sub: "national register",
   },
   {
     n: "02",
@@ -155,8 +136,8 @@ export const LIVE_MODULES = [
     icon: "git-fork",
     title: "Verification",
     desc: "Parentage & relationship truth, from biology.",
-    stat: "318 cases",
-    sub: "12 awaiting review",
+    stat: "Workbench & reverse search",
+    sub: "exclusion-based",
     accent: "var(--accent)",
   },
   {
@@ -165,8 +146,8 @@ export const LIVE_MODULES = [
     icon: "chart-scatter",
     title: "Population Genetics",
     desc: "Diversity, inbreeding & structure intelligence.",
-    stat: "GDI 72.3 / 100",
-    sub: "+2.9 vs last quarter",
+    stat: "Diversity analytics",
+    sub: "national scale",
   },
   {
     n: "04",
@@ -174,8 +155,8 @@ export const LIVE_MODULES = [
     icon: "shield-check",
     title: "Registry Integrity",
     desc: "Auto-detected errors & reconciliation.",
-    stat: "164 open alerts",
-    sub: "23 critical",
+    stat: "Alert queue",
+    sub: "evidence-backed",
     accent: "var(--status-danger)",
   },
   {
@@ -184,8 +165,8 @@ export const LIVE_MODULES = [
     icon: "certificate",
     title: "Reports & Certificates",
     desc: "QR-verifiable certificates & population reports.",
-    stat: "1,082 issued",
-    sub: "44 this week",
+    stat: "Generate & verify",
+    sub: "bilingual",
   },
   {
     n: "06",
@@ -194,6 +175,6 @@ export const LIVE_MODULES = [
     title: "Admin",
     desc: "Users, marker panel, reference data, audit log.",
     stat: "5 roles",
-    sub: "panel v1 · 14 loci",
+    sub: "panel v1",
   },
 ];

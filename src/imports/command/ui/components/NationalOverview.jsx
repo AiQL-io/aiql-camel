@@ -8,9 +8,14 @@ import { BarList } from "@/imports/core/components/BarList.jsx";
 import { Histogram } from "@/imports/core/components/Histogram.jsx";
 import { Gauge } from "@/imports/core/components/Gauge.jsx";
 import { SectionCard } from "./SectionCard.jsx";
-import { REGIONS, HET_BINS, INBR_BINS } from "./data.js";
 
-export function NationalOverview({ executive }) {
+export function NationalOverview({
+  executive,
+  regions = [],
+  hetBins = [],
+  inbrBins = [],
+  richnessGauge = 0,
+}) {
   return (
     <Row $executive={executive}>
       <SectionCard
@@ -18,7 +23,7 @@ export function NationalOverview({ executive }) {
         action={<Link href="/registry">Open registry →</Link>}
       >
         <BarList
-          data={REGIONS}
+          data={regions}
           renderHref={(d) => `/registry?region=${encodeURIComponent(d.label)}`}
         />
       </SectionCard>
@@ -29,18 +34,18 @@ export function NationalOverview({ executive }) {
             <div className="block">
               <Overline>Heterozygosity</Overline>
               <Histogram
-                bins={HET_BINS}
+                bins={hetBins}
                 color="var(--status-success)"
                 height={48}
               />
             </div>
             <div className="block">
               <Overline>Inbreeding distribution</Overline>
-              <Histogram bins={INBR_BINS} color="var(--accent)" height={48} />
+              <Histogram bins={inbrBins} color="var(--accent)" height={48} />
             </div>
             <div className="gauge">
               <Gauge
-                value={78}
+                value={richnessGauge}
                 max={100}
                 label="Allelic richness"
                 color="var(--accent)"

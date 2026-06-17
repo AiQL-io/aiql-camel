@@ -73,6 +73,14 @@ export function generateDataset(userConfig = {}) {
   const profiles = [];
   const byBreedSex = {};
   BREEDS.forEach((b) => (byBreedSex[b.id] = { male: [], female: [] }));
+  const breedOwners = {};
+  BREEDS.forEach(
+    (b) =>
+      (breedOwners[b.id] = owners.filter((o) => o.primaryBreedId === b.id)),
+  );
+  const genoByCamel = new Map();
+  const ownerAnimals = new Map();
+  owners.forEach((o) => ownerAnimals.set(o.id, { male: [], female: [] }));
 
   let counter = 0;
   const newId = () => `c_${String(++counter).padStart(6, "0")}`;
@@ -156,6 +164,9 @@ export function generateDataset(userConfig = {}) {
     animals.push(animal);
     owner.animalCount++;
     byBreedSex[breed.id][sex].push(animal);
+    genoByCamel.set(id, genotype);
+    const oa = ownerAnimals.get(owner.id);
+    if (oa) oa[sex].push(animal);
     return animal;
   }
 
@@ -165,8 +176,8 @@ export function generateDataset(userConfig = {}) {
   );
   for (let i = 0; i < foundersCount; i++) {
     const breed = BREEDS[rng.weightedIndex(BREED_WEIGHTS)];
-    const breedOwners = owners.filter((o) => o.primaryBreedId === breed.id);
-    const owner = breedOwners.length ? rng.pick(breedOwners) : rng.pick(owners);
+    const bo = breedOwners[breed.id];
+    const owner = bo.length ? rng.pick(bo) : rng.pick(owners);
     const sex = rng.next() < 0.45 ? "male" : "female";
     const birthYear = config.baseYear - rng.int(18, 26);
     const genotype = makeGenotypeFromFreqs(breedFreq[breed.id]);
@@ -189,17 +200,15 @@ export function generateDataset(userConfig = {}) {
     const females = byBreedSex[breed.id].female;
     if (males.length < 1 || females.length < 1) continue;
 
-    const breedOwners = owners.filter((o) => o.primaryBreedId === breed.id);
-    const owner = breedOwners.length ? rng.pick(breedOwners) : rng.pick(owners);
+    const bo = breedOwners[breed.id];
+    const owner = bo.length ? rng.pick(bo) : rng.pick(owners);
     const inbred = inbredOwnerIds.has(owner.id);
 
     let sire, dam;
     if (inbred) {
-      const pool = animals.filter((a) => a.ownerId === owner.id);
-      const m = pool.filter((a) => a.sex === "male");
-      const f = pool.filter((a) => a.sex === "female");
-      sire = m.length ? rng.pick(m) : rng.pick(males);
-      dam = f.length ? rng.pick(f) : rng.pick(females);
+      const oa = ownerAnimals.get(owner.id);
+      sire = oa.male.length ? rng.pick(oa.male) : rng.pick(males);
+      dam = oa.female.length ? rng.pick(oa.female) : rng.pick(females);
     } else {
       sire = rng.pick(males);
       dam = rng.pick(females);
@@ -213,9 +222,10 @@ export function generateDataset(userConfig = {}) {
     );
     if (birthYear <= parentMaxYear) continue;
 
-    const sireGeno = profiles.find((p) => p.camelId === sire.id).genotypes;
-    const damGeno = profiles.find((p) => p.camelId === dam.id).genotypes;
-    const genotype = makeGenotypeFromParents(sireGeno, damGeno);
+    const genotype = makeGenotypeFromParents(
+      genoByCamel.get(sire.id),
+      genoByCamel.get(dam.id),
+    );
     const sex = rng.next() < 0.45 ? "male" : "female";
     addAnimal({
       breed,

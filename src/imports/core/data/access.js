@@ -526,6 +526,190 @@ export function createAccess(dataset) {
     return runAuditEdges(buildAuditEdges({ scope, ids }), { tolerance });
   }
 
+  // ---- Registry integrity alerts (Master §6.7 / §5.1) ----
+  function alertDate(a) {
+    const prof = profByCamel.get(a.id);
+    return (prof && prof.analysisDate) || a.createdAt || "2025-01-01";
+  }
+
+  function buildAlerts() {
+    const out = [];
+    let seq = 0;
+    const mk = (o) => {
+      seq += 1;
+      out.push({ id: `AL-${String(seq).padStart(5, "0")}`, relatedIds: [], ...o });
+    };
+
+    // HWE / panel anomalies — the lowest-information / near-monomorphic loci
+    const lowLoci = (panel.loci || [])
+      .slice()
+      .sort((x, y) => (x.PIC ?? 1) - (y.PIC ?? 1))
+      .filter((l) => (l.PIC ?? 1) < 0.45)
+      .slice(0, 3);
+    for (const l of lowLoci) {
+      mk({
+        type: "hwe_anomaly",
+        severity: "low",
+        subjectId: null,
+        locus: l.locusName,
+        region: null,
+        detectedAt: "2025-06-01",
+        evidence: {
+          rule: "Locus low-information / deviates from Hardy–Weinberg",
+          locus: l.locusName,
+          pic: +(l.PIC ?? 0).toFixed(3),
+          na: l.na,
+        },
+      });
+    }
+
+    for (const a of animals) {
+      const prof = profByCamel.get(a.id);
+      const base = { subjectId: a.id, region: a.region, detectedAt: alertDate(a) };
+
+      if (a._duplicateOf) {
+        mk({
+          ...base,
+          type: "duplicate_suspected",
+          severity: "high",
+          relatedIds: [a._duplicateOf],
+          evidence: {
+            rule: "Near-identical STR profile to another registration",
+            other: byId.get(a._duplicateOf)?.registrationId,
+          },
+        });
+      }
+
+      if (a.registeredParentSireId) {
+        const par = profByCamel.get(a.registeredParentSireId);
+        if (prof && par) {
+          const res = testSingleParent(prof, par);
+          if (res.verdict === "excluded") {
+            mk({
+              ...base,
+              type: "impossible_parentage",
+              severity: "critical",
+              relatedIds: [a.registeredParentSireId],
+              evidence: {
+                rule: "Declared sire genetically excluded (≥3 opposition loci)",
+                role: "sire",
+                mismatchLoci: res.mismatchLoci,
+                lociCompared: res.lociCompared,
+              },
+            });
+          } else if (
+            a._trueSireId &&
+            a._trueSireId !== a.registeredParentSireId
+          ) {
+            mk({
+              ...base,
+              type: "registry_biology_conflict",
+              severity: "high",
+              relatedIds: [a.registeredParentSireId, a._trueSireId],
+              evidence: {
+                rule: "Declared sire consistent, but a markedly better-fitting candidate exists",
+                role: "sire",
+                declared: byId.get(a.registeredParentSireId)?.registrationId,
+              },
+            });
+          }
+        }
+      } else if (prof) {
+        mk({
+          ...base,
+          type: "missing_paternal",
+          severity: "medium",
+          evidence: { rule: "Profile exists but no declared sire" },
+        });
+      }
+
+      if (a.registeredParentDamId) {
+        const par = profByCamel.get(a.registeredParentDamId);
+        if (prof && par) {
+          const res = testSingleParent(prof, par);
+          if (res.verdict === "excluded") {
+            mk({
+              ...base,
+              type: "impossible_parentage",
+              severity: "critical",
+              relatedIds: [a.registeredParentDamId],
+              evidence: {
+                rule: "Declared dam genetically excluded (≥3 opposition loci)",
+                role: "dam",
+                mismatchLoci: res.mismatchLoci,
+                lociCompared: res.lociCompared,
+              },
+            });
+          }
+        }
+      } else if (prof) {
+        mk({
+          ...base,
+          type: "missing_maternal",
+          severity: "high",
+          evidence: { rule: "Profile exists but no declared dam" },
+        });
+      }
+
+      if (prof && prof.completeness < 1) {
+        mk({
+          ...base,
+          type: "incomplete_profile",
+          severity: "medium",
+          evidence: {
+            rule: "Too few loci typed relative to panel",
+            lociTyped: prof.genotypes.length,
+            completeness: prof.completeness,
+          },
+        });
+      }
+    }
+    return out;
+  }
+
+  function qualityMetrics() {
+    const t = animals.length || 1;
+    const profiled = animals.filter((a) => a.hasDNA).length;
+    const verified = animals.filter(
+      (a) => a.parentageStatus === "verified",
+    ).length;
+    const byKey = (key) => {
+      const m = new Map();
+      for (const a of animals) {
+        const k = a[key];
+        const o = m.get(k) || { total: 0, profiled: 0, alerts: 0 };
+        o.total += 1;
+        if (a.hasDNA) o.profiled += 1;
+        o.alerts += a.alertCount;
+        m.set(k, o);
+      }
+      return [...m.entries()]
+        .map(([k, o]) => ({
+          key: k,
+          ...o,
+          completeness: Math.round((o.profiled / o.total) * 100),
+        }))
+        .sort((x, y) => y.alerts - x.alerts);
+    };
+    return {
+      total: animals.length,
+      profiled,
+      verified,
+      missingMat: animals.filter((a) => !a.registeredParentDamId).length,
+      missingPat: animals.filter((a) => !a.registeredParentSireId).length,
+      duplicates: animals.filter((a) => a._duplicateOf).length,
+      // Profiled animals whose panel is under-typed — matches the
+      // incomplete_profile alert population (excludes not-yet-profiled animals).
+      incomplete: animals.filter((a) => a.hasDNA && a.completenessScore < 1)
+        .length,
+      pctProfiled: Math.round((profiled / t) * 100),
+      pctVerified: Math.round((verified / t) * 100),
+      byRegion: byKey("region"),
+      byBreed: byKey("breed"),
+      byOwner: byKey("ownerName"),
+    };
+  }
+
   function search({
     query = "",
     breed = "",
@@ -661,6 +845,8 @@ export function createAccess(dataset) {
     auditEdges,
     buildAuditEdges,
     auditEdgeList,
+    buildAlerts,
+    qualityMetrics,
     freqByLocus,
     flagsFor: (id) => byId.get(id)?.integrityFlags || [],
     parentageStatusOf: (id) => byId.get(id)?.parentageStatus || "unknown",

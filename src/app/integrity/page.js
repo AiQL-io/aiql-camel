@@ -1,5 +1,5 @@
-import { ModulePlaceholder } from "@/imports/core/components/ModulePlaceholder.jsx";
+import AlertQueuePage from "@/imports/integrity/ui/pages/AlertQueuePage.jsx";
 
 export default function Page() {
-  return <ModulePlaceholder icon="shield-check" titleKey="nav.integrity" />;
+  return <AlertQueuePage />;
 }

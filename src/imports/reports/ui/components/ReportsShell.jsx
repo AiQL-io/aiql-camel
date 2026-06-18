@@ -5,21 +5,23 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import styled from "styled-components";
 import { Overline } from "@/imports/core/components/Overline.jsx";
+import { useI18n } from "@/imports/core/providers/I18nProvider.jsx";
 
 const NAV = [
-  { href: "/reports", label: "Generate", exact: true },
-  { href: "/reports/templates", label: "Templates" },
-  { href: "/reports/history", label: "History" },
-  { href: "/reports/verify", label: "Verify" },
+  { href: "/reports", labelKey: "reports.tab.generate", exact: true },
+  { href: "/reports/templates", labelKey: "reports.tab.templates" },
+  { href: "/reports/history", labelKey: "reports.tab.history" },
+  { href: "/reports/verify", labelKey: "reports.tab.verify" },
 ];
 
 export function ReportsShell({ children }) {
   const pathname = usePathname();
+  const { t } = useI18n();
   return (
     <Wrap>
       <header className="rh">
-        <Overline>Reports &amp; certificates</Overline>
-        <h1>Reports &amp; Certificates</h1>
+        <Overline>{t("reports.overline")}</Overline>
+        <h1>{t("nav.reports")}</h1>
       </header>
       <nav className="subnav">
         {NAV.map((n) => {
@@ -28,7 +30,7 @@ export function ReportsShell({ children }) {
             : pathname.startsWith(n.href);
           return (
             <Link key={n.href} href={n.href} className={active ? "on" : ""}>
-              {n.label}
+              {t(n.labelKey)}
             </Link>
           );
         })}

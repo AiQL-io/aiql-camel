@@ -99,7 +99,7 @@ export function RegistryView({ access }) {
     <>
       <Head>
         <div>
-          <Overline>National registry</Overline>
+          <Overline>{t("registry.overline")}</Overline>
           <h1>{t("nav.registry")}</h1>
         </div>
         <div className="actions">

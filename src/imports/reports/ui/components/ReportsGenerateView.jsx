@@ -7,6 +7,7 @@ import { Card } from "@/imports/core/components/Card.jsx";
 import { Button } from "@/imports/core/components/Button.jsx";
 import { Icon } from "@/imports/core/components/Icon.jsx";
 import { Overline } from "@/imports/core/components/Overline.jsx";
+import { useRole } from "@/imports/core/providers/RoleProvider.jsx";
 import {
   REPORT_TYPES,
   buildReportContent,
@@ -71,6 +72,8 @@ function AnimalPicker({ access, value, onPick }) {
 }
 
 export function ReportsGenerateView({ access }) {
+  const { can } = useRole();
+  const canIssue = can("issueCertificate");
   const templatesList = useTemplates();
   const [type, setType] = useState("identity_certificate");
   const [animal, setAnimal] = useState(null);
@@ -88,7 +91,11 @@ export function ReportsGenerateView({ access }) {
     if (def.subject === "trio") {
       if (!animal) return [];
       const a = access.getAnimal(animal.id);
-      return [animal.id, a?._trueSireId, a?._trueDamId].filter(Boolean);
+      return [
+        animal.id,
+        a?.registeredParentSireId,
+        a?.registeredParentDamId,
+      ].filter(Boolean);
     }
     return [];
   }, [def, animal, access]);
@@ -219,7 +226,7 @@ export function ReportsGenerateView({ access }) {
               </div>
             </div>
           </Issued>
-        ) : (
+        ) : canIssue ? (
           <Button
             variant="primary"
             disabled={!ready}
@@ -228,6 +235,11 @@ export function ReportsGenerateView({ access }) {
           >
             Issue document
           </Button>
+        ) : (
+          <NoPerm>
+            <Icon name="lock-simple" size={14} /> Issuing certificates requires
+            the Registrar, Geneticist, Technician, or Admin role.
+          </NoPerm>
         )}
       </div>
 
@@ -306,6 +318,18 @@ const Grid = styled.div`
     background: var(--accent-soft);
     color: var(--accent);
   }
+`;
+
+const NoPerm = styled.p`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  color: var(--fg-subtle);
+  font-size: var(--text-xs);
 `;
 
 const PreviewHead = styled.div`

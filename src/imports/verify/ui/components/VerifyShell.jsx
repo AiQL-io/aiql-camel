@@ -7,14 +7,15 @@ import styled from "styled-components";
 import { Overline } from "@/imports/core/components/Overline.jsx";
 import { Chip } from "@/imports/core/components/Chip.jsx";
 import { Icon } from "@/imports/core/components/Icon.jsx";
+import { useI18n } from "@/imports/core/providers/I18nProvider.jsx";
 import { useCases } from "@/imports/verify/state/caseStore.js";
 
 const NAV = [
-  { href: "/verify", label: "Workbench", exact: true },
-  { href: "/verify/search", label: "Reverse Search" },
-  { href: "/verify/relationship", label: "Relationships" },
-  { href: "/verify/batch", label: "Batch & Audit" },
-  { href: "/verify/cases", label: "Cases" },
+  { href: "/verify", labelKey: "verify.tab.workbench", exact: true },
+  { href: "/verify/search", labelKey: "verify.tab.search" },
+  { href: "/verify/relationship", labelKey: "verify.tab.relationship" },
+  { href: "/verify/batch", labelKey: "verify.tab.batch" },
+  { href: "/verify/cases", labelKey: "verify.tab.cases" },
 ];
 
 const STATUS_TONE = {
@@ -26,14 +27,15 @@ const STATUS_TONE = {
 
 export function VerifyShell({ children }) {
   const pathname = usePathname();
+  const { t } = useI18n();
   const { activeCase, setActiveCase } = useCases();
 
   return (
     <Wrap>
       <header className="vh">
         <div>
-          <Overline>Parentage &amp; relationship intelligence</Overline>
-          <h1>Verification</h1>
+          <Overline>{t("verify.overline")}</Overline>
+          <h1>{t("nav.verify")}</h1>
         </div>
         <CaseBar>
           {activeCase ? (
@@ -70,7 +72,7 @@ export function VerifyShell({ children }) {
             : pathname.startsWith(n.href);
           return (
             <Link key={n.href} href={n.href} className={active ? "on" : ""}>
-              {n.label}
+              {t(n.labelKey)}
             </Link>
           );
         })}

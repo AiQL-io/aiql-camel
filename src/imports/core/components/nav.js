@@ -30,7 +30,13 @@ export const MODULES = [
     icon: "certificate",
     labelKey: "nav.reports",
   },
-  { id: "admin", href: "/admin", icon: "gear-six", labelKey: "nav.admin" },
+  {
+    id: "admin",
+    href: "/admin",
+    icon: "gear-six",
+    labelKey: "nav.admin",
+    cap: "manageAdmin",
+  },
 ];
 
 export function activeModuleId(pathname) {

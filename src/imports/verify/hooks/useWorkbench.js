@@ -1,19 +1,16 @@
 "use client";
 
-import { useState, useCallback } from "react";
-
-function initialParam(name) {
-  if (typeof window === "undefined") return "";
-  return new URLSearchParams(window.location.search).get(name) || "";
-}
+import { useState, useCallback, useEffect, useRef } from "react";
+import { useSearchParams } from "next/navigation";
 
 export function useWorkbench(access) {
-  const [offspringId, setOffspringId] = useState(() =>
-    initialParam("offspring"),
+  const params = useSearchParams();
+  const [offspringId, setOffspringId] = useState(
+    () => params.get("offspring") || "",
   );
-  const [mode, setMode] = useState(() => initialParam("mode") || "paternity");
-  const [sireId, setSireId] = useState(() => initialParam("sire"));
-  const [damId, setDamId] = useState(() => initialParam("dam"));
+  const [mode, setMode] = useState(() => params.get("mode") || "paternity");
+  const [sireId, setSireId] = useState(() => params.get("sire") || "");
+  const [damId, setDamId] = useState(() => params.get("dam") || "");
   const [tolerance, setTolerance] = useState(1);
   const [result, setResult] = useState(null);
 
@@ -67,6 +64,13 @@ export function useWorkbench(access) {
       candidateGeno: access.getProfile(candId)?.genotypes || [],
     });
   }, [access, offspringId, mode, sireId, damId, tolerance]);
+
+  const autoRan = useRef(false);
+  useEffect(() => {
+    if (autoRan.current) return;
+    autoRan.current = true;
+    if (canRun) queueMicrotask(run);
+  }, [canRun, run]);
 
   const setField = (setter) => (v) => {
     setter(v);

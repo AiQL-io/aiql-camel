@@ -72,7 +72,11 @@ export function ProfileHeader({ animal, flags, can }) {
         {can("runAnalysis") && (
           <Button
             as={Link}
-            href={`/verify?offspring=${animal.id}`}
+            href={
+              animal.registeredParentSireId
+                ? `/verify?offspring=${animal.id}&sire=${animal.registeredParentSireId}`
+                : `/verify?offspring=${animal.id}`
+            }
             variant="primary"
             size="sm"
             leadingIcon={<Icon name="git-fork" size={14} />}

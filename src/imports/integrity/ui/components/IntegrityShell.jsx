@@ -5,19 +5,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import styled from "styled-components";
 import { Overline } from "@/imports/core/components/Overline.jsx";
+import { useI18n } from "@/imports/core/providers/I18nProvider.jsx";
 
 const NAV = [
-  { href: "/integrity", label: "Alert Queue", exact: true },
-  { href: "/integrity/quality", label: "Data Quality" },
+  { href: "/integrity", labelKey: "integrity.tab.queue", exact: true },
+  { href: "/integrity/quality", labelKey: "integrity.tab.quality" },
 ];
 
 export function IntegrityShell({ children }) {
   const pathname = usePathname();
+  const { t } = useI18n();
   return (
     <Wrap>
       <header className="ih">
-        <Overline>Registry integrity &amp; data quality</Overline>
-        <h1>Registry Integrity</h1>
+        <Overline>{t("integrity.overline")}</Overline>
+        <h1>{t("nav.integrity")}</h1>
       </header>
       <nav className="subnav">
         {NAV.map((n) => {
@@ -26,7 +28,7 @@ export function IntegrityShell({ children }) {
             : pathname.startsWith(n.href);
           return (
             <Link key={n.href} href={n.href} className={active ? "on" : ""}>
-              {n.label}
+              {t(n.labelKey)}
             </Link>
           );
         })}

@@ -8,6 +8,7 @@ import { Button } from "@/imports/core/components/Button.jsx";
 import { Icon } from "@/imports/core/components/Icon.jsx";
 import { Overline } from "@/imports/core/components/Overline.jsx";
 import { Select } from "@/imports/core/components/Select.jsx";
+import { useRole } from "@/imports/core/providers/RoleProvider.jsx";
 import { REPORT_TYPES } from "@/imports/reports/engine/reports.js";
 import {
   useReports,
@@ -29,6 +30,8 @@ const STATUS_OPTIONS = [
 
 export function ReportHistoryView({ access }) {
   const reports = useReports(access);
+  const { can } = useRole();
+  const canIssue = can("issueCertificate");
   const [q, setQ] = useState("");
   const [type, setType] = useState("");
   const [status, setStatus] = useState("");
@@ -86,14 +89,16 @@ export function ReportHistoryView({ access }) {
           <span className="count">
             {issuedCount} issued · {reports.length} total
           </span>
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => setBatchOpen((o) => !o)}
-            leadingIcon={<Icon name="stack" size={14} />}
-          >
-            Batch issue
-          </Button>
+          {canIssue && (
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => setBatchOpen((o) => !o)}
+              leadingIcon={<Icon name="stack" size={14} />}
+            >
+              Batch issue
+            </Button>
+          )}
           <Button
             size="sm"
             variant="ghost"
@@ -168,7 +173,9 @@ export function ReportHistoryView({ access }) {
                 </Link>
                 <span className={`status ${r.status}`}>{r.status}</span>
                 <span className="acts">
-                  {r.status === "issued" ? (
+                  {!canIssue ? (
+                    <span className="muted">—</span>
+                  ) : r.status === "issued" ? (
                     <button
                       type="button"
                       className="revoke"
@@ -347,6 +354,9 @@ const Table = styled.div`
   }
   .acts .reissue {
     color: var(--accent);
+  }
+  .acts .muted {
+    color: var(--fg-subtle);
   }
   .empty {
     padding: 28px;

@@ -7,16 +7,19 @@ import { usePathname } from "next/navigation";
 import { Icon } from "@/imports/core/components/Icon.jsx";
 import { Tooltip } from "@/imports/core/components/Tooltip.jsx";
 import { useI18n } from "@/imports/core/providers/I18nProvider.jsx";
+import { useRole } from "@/imports/core/providers/RoleProvider.jsx";
 import { MODULES, activeModuleId } from "@/imports/core/components/nav.js";
 
 export function NavRail() {
   const pathname = usePathname();
   const active = activeModuleId(pathname);
   const { t } = useI18n();
+  const { can } = useRole();
+  const modules = MODULES.filter((m) => !m.cap || can(m.cap));
 
   return (
     <Rail aria-label="Primary">
-      {MODULES.map((m) => {
+      {modules.map((m) => {
         const on = m.id === active;
         return (
           <Tooltip key={m.id} label={t(m.labelKey)} side="right">

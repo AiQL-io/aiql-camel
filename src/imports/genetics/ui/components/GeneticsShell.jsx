@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import styled from "styled-components";
 import { Overline } from "@/imports/core/components/Overline.jsx";
 import { SegmentedControl } from "@/imports/core/components/SegmentedControl.jsx";
+import { useI18n } from "@/imports/core/providers/I18nProvider.jsx";
 import {
   useGeneticsState,
   serializeState,
@@ -15,18 +16,19 @@ import { ScopeBar } from "./ScopeBar.jsx";
 import { MethodsDrawer } from "./MethodsDrawer.jsx";
 
 const NAV = [
-  { href: "/genetics", label: "Dashboard", exact: true },
-  { href: "/genetics/structure", label: "Structure" },
-  { href: "/genetics/relatedness", label: "Relatedness" },
-  { href: "/genetics/inbreeding", label: "Inbreeding & Kinship" },
-  { href: "/genetics/clusters", label: "Clusters" },
-  { href: "/genetics/cohorts", label: "Cohorts" },
-  { href: "/genetics/markers", label: "Markers" },
-  { href: "/genetics/methods", label: "Methods" },
+  { href: "/genetics", labelKey: "genetics.tab.dashboard", exact: true },
+  { href: "/genetics/structure", labelKey: "genetics.tab.structure" },
+  { href: "/genetics/relatedness", labelKey: "genetics.tab.relatedness" },
+  { href: "/genetics/inbreeding", labelKey: "genetics.tab.inbreeding" },
+  { href: "/genetics/clusters", labelKey: "genetics.tab.clusters" },
+  { href: "/genetics/cohorts", labelKey: "genetics.tab.cohorts" },
+  { href: "/genetics/markers", labelKey: "genetics.tab.markers" },
+  { href: "/genetics/methods", labelKey: "genetics.tab.methods" },
 ];
 
 export function GeneticsShell({ access, children }) {
   const pathname = usePathname();
+  const { t } = useI18n();
   const { state, scope, audience, setAudience } = useGeneticsState();
 
   useEffect(() => {
@@ -46,8 +48,8 @@ export function GeneticsShell({ access, children }) {
   return (
     <Wrap>
       <header className="gh">
-        <Overline>Population genetics &amp; diversity intelligence</Overline>
-        <h1>Population Genetics</h1>
+        <Overline>{t("genetics.overline")}</Overline>
+        <h1>{t("nav.genetics")}</h1>
       </header>
 
       <nav className="subnav">
@@ -57,7 +59,7 @@ export function GeneticsShell({ access, children }) {
             : pathname.startsWith(n.href);
           return (
             <Link key={n.href} href={n.href} className={active ? "on" : ""}>
-              {n.label}
+              {t(n.labelKey)}
             </Link>
           );
         })}
@@ -66,17 +68,19 @@ export function GeneticsShell({ access, children }) {
       <div className="bar">
         {access && <ScopeBar access={access} />}
         <div className="audience">
-          <span className="al">Audience</span>
+          <span className="al">{t("common.audience")}</span>
           <SegmentedControl
             value={audience}
             onChange={setAudience}
             options={[
-              { value: "analyst", label: "Analyst" },
-              { value: "executive", label: "Executive" },
+              { value: "analyst", label: t("common.analyst") },
+              { value: "executive", label: t("common.executive") },
             ]}
           />
         </div>
       </div>
+
+      <p className="proto-note">{t("genetics.protoNote")}</p>
 
       <div className="body">{children}</div>
       <MethodsDrawer />
@@ -145,6 +149,17 @@ const Wrap = styled.div`
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: var(--fg-subtle);
+  }
+  .proto-note {
+    margin-top: 16px;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-inline-start: 3px solid var(--accent);
+    border-radius: var(--radius-md);
+    background: var(--surface-2);
+    color: var(--fg-subtle);
+    font-size: var(--text-xs);
+    line-height: 1.5;
   }
   .body {
     margin-top: 20px;

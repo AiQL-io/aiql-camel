@@ -7,23 +7,25 @@ import styled from "styled-components";
 import { Overline } from "@/imports/core/components/Overline.jsx";
 import { Icon } from "@/imports/core/components/Icon.jsx";
 import { useRole } from "@/imports/core/providers/RoleProvider.jsx";
+import { useI18n } from "@/imports/core/providers/I18nProvider.jsx";
 
 const NAV = [
-  { href: "/admin", label: "Users & Roles", exact: true },
-  { href: "/admin/panels", label: "Marker Panels" },
-  { href: "/admin/reference", label: "Reference Data" },
-  { href: "/admin/audit", label: "Audit Log" },
+  { href: "/admin", labelKey: "admin.tab.users", exact: true },
+  { href: "/admin/panels", labelKey: "admin.tab.panels" },
+  { href: "/admin/reference", labelKey: "admin.tab.reference" },
+  { href: "/admin/audit", labelKey: "admin.tab.audit" },
 ];
 
 export function AdminShell({ children }) {
   const pathname = usePathname();
   const { can } = useRole();
+  const { t } = useI18n();
   const isAdmin = can("manageAdmin");
   return (
     <Wrap>
       <header className="ah">
-        <Overline>Platform administration</Overline>
-        <h1>Admin</h1>
+        <Overline>{t("admin.overline")}</Overline>
+        <h1>{t("nav.admin")}</h1>
       </header>
       {!isAdmin && (
         <ReadOnly>
@@ -39,7 +41,7 @@ export function AdminShell({ children }) {
             : pathname.startsWith(n.href);
           return (
             <Link key={n.href} href={n.href} className={active ? "on" : ""}>
-              {n.label}
+              {t(n.labelKey)}
             </Link>
           );
         })}

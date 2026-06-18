@@ -113,6 +113,57 @@ export function issueCertificate(id, by = "demo-user") {
   );
 }
 
+export function findCertByCode(code) {
+  if (!code) return null;
+  const norm = code.trim().toUpperCase();
+  const c = cases.find(
+    (x) => x.certificate && x.certificate.code.toUpperCase() === norm,
+  );
+  if (!c) return null;
+  const off = c.subjects?.offspring;
+  const parent = c.subjects?.sire || c.subjects?.dam;
+  const label = off ? `${off.reg} · ${off.name || ""}`.trim() : c.number;
+  const cpe = c.stats?.cpe;
+  return {
+    id: c.id,
+    source: "verification-case",
+    type: "parentage_certificate",
+    subjectIds: [],
+    subjectLabel: label,
+    templateId: "manhal_official",
+    generatedBy: c.assignee || c.createdBy,
+    generatedAt: c.certificate.issuedAt,
+    verificationCode: c.certificate.code,
+    status: c.certificate.revoked ? "revoked" : "issued",
+    content: {
+      heading: "Parentage Verification Certificate",
+      subjectLabel: label,
+      facts: [
+        ["Case", c.number],
+        ["Offspring", off ? `${off.reg} · ${off.name || ""}`.trim() : "—"],
+        ["Tested parent", parent ? `${parent.reg}` : "—"],
+        ["Test type", c.type],
+      ],
+      evidence: {
+        title: "Parentage evidence",
+        rows: [
+          ["Verdict", c.verdict || "—"],
+          [
+            "Combined exclusion power (CPE)",
+            cpe != null ? `${(cpe * 100).toFixed(4)}%` : "—",
+          ],
+          ["Loci compared", String(c.stats?.lociCompared ?? "—")],
+          ["Mismatch loci", String(c.stats?.mismatchCount ?? "—")],
+        ],
+      },
+      statement:
+        c.verdict === "excluded"
+          ? "The genetic evidence EXCLUDES the declared parentage at one or more loci."
+          : "The genetic evidence is CONSISTENT with the declared parentage at the tested loci.",
+    },
+  };
+}
+
 export function revokeCertificate(id, by = "demo-user") {
   const c = cases.find((x) => x.id === id);
   if (!c || !c.certificate) return;

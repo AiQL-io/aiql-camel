@@ -1,5 +1,5 @@
-import { ModulePlaceholder } from "@/imports/core/components/ModulePlaceholder.jsx";
+import ReportsGeneratePage from "@/imports/reports/ui/pages/ReportsGeneratePage.jsx";
 
 export default function Page() {
-  return <ModulePlaceholder icon="certificate" titleKey="nav.reports" />;
+  return <ReportsGeneratePage />;
 }

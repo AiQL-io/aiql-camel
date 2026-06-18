@@ -1,0 +1,153 @@
+"use client";
+
+import React, { useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import styled from "styled-components";
+import { Overline } from "@/imports/core/components/Overline.jsx";
+import { SegmentedControl } from "@/imports/core/components/SegmentedControl.jsx";
+import {
+  useGeneticsState,
+  serializeState,
+  applyStateFromParams,
+} from "@/imports/genetics/state/scopeStore.js";
+import { ScopeBar } from "./ScopeBar.jsx";
+import { MethodsDrawer } from "./MethodsDrawer.jsx";
+
+const NAV = [
+  { href: "/genetics", label: "Dashboard", exact: true },
+  { href: "/genetics/structure", label: "Structure" },
+  { href: "/genetics/relatedness", label: "Relatedness" },
+  { href: "/genetics/inbreeding", label: "Inbreeding & Kinship" },
+  { href: "/genetics/clusters", label: "Clusters" },
+  { href: "/genetics/cohorts", label: "Cohorts" },
+  { href: "/genetics/markers", label: "Markers" },
+  { href: "/genetics/methods", label: "Methods" },
+];
+
+export function GeneticsShell({ access, children }) {
+  const pathname = usePathname();
+  const { state, scope, audience, setAudience } = useGeneticsState();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    // run once on mount; store setters are external mutations
+    applyStateFromParams(new URLSearchParams(window.location.search));
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const qs = serializeState(state);
+    const url = qs
+      ? `${window.location.pathname}?${qs}`
+      : window.location.pathname;
+    window.history.replaceState(null, "", url);
+  }, [state, scope, audience]);
+
+  return (
+    <Wrap>
+      <header className="gh">
+        <Overline>Population genetics &amp; diversity intelligence</Overline>
+        <h1>Population Genetics</h1>
+      </header>
+
+      <nav className="subnav">
+        {NAV.map((n) => {
+          const active = n.exact
+            ? pathname === n.href
+            : pathname.startsWith(n.href);
+          return (
+            <Link key={n.href} href={n.href} className={active ? "on" : ""}>
+              {n.label}
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="bar">
+        {access && <ScopeBar access={access} />}
+        <div className="audience">
+          <span className="al">Audience</span>
+          <SegmentedControl
+            value={audience}
+            onChange={setAudience}
+            options={[
+              { value: "analyst", label: "Analyst" },
+              { value: "executive", label: "Executive" },
+            ]}
+          />
+        </div>
+      </div>
+
+      <div className="body">{children}</div>
+      <MethodsDrawer />
+    </Wrap>
+  );
+}
+
+const Wrap = styled.div`
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 80px 40px 96px 128px;
+  animation: aiql-fade-in 220ms ease-out;
+
+  .gh h1 {
+    font-size: var(--text-2xl);
+    line-height: 40px;
+    font-weight: var(--weight-medium);
+    letter-spacing: -0.02em;
+    margin-top: 8px;
+  }
+  .subnav {
+    display: flex;
+    gap: 4px;
+    margin-top: 20px;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .subnav a {
+    padding: 10px 14px;
+    font-size: var(--text-sm);
+    color: var(--fg-subtle);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    white-space: nowrap;
+  }
+  .subnav a:hover {
+    color: var(--fg);
+  }
+  .subnav a.on {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    font-weight: var(--weight-medium);
+  }
+  .bar {
+    display: flex;
+    align-items: stretch;
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .bar > div:first-child {
+    flex: 1;
+    min-width: 0;
+  }
+  .audience {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    justify-content: center;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    background: var(--surface);
+  }
+  .audience .al {
+    font-size: var(--text-xs);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--fg-subtle);
+  }
+  .body {
+    margin-top: 20px;
+  }
+`;

@@ -1,5 +1,5 @@
-import { ModulePlaceholder } from "@/imports/core/components/ModulePlaceholder.jsx";
+import DashboardPage from "@/imports/genetics/ui/pages/DashboardPage.jsx";
 
 export default function Page() {
-  return <ModulePlaceholder icon="chart-scatter" titleKey="nav.genetics" />;
+  return <DashboardPage />;
 }

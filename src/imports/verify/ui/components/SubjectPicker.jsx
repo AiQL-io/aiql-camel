@@ -56,7 +56,6 @@ export function SubjectPicker({
     return rows.slice(0, 30);
   }, [access, q, wantSex, showAll, offspring, role]);
 
-  // plausibility warnings for the current selection (non-blocking)
   const warnings = [];
   if (selected) {
     if (wantSex && selected.sex !== wantSex)

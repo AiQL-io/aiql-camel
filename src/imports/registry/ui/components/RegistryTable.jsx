@@ -159,7 +159,6 @@ export function RegistryTable({
   const minWidth =
     CHECK_W + 16 + cols.reduce((sum, c) => sum + widthPx(c.width), 0);
 
-  // sticky-left offsets for the pinned (leading) columns + checkbox
   let running = CHECK_W;
   const lefts = {};
   for (const c of cols) {

@@ -1,5 +1,3 @@
-// Reports & Certificates engine (Master §7.6). Frontend-only over synthetic data.
-
 export const REPORT_TYPES = [
   {
     id: "identity_certificate",
@@ -76,7 +74,6 @@ export function generateVerificationCode(seed) {
   return `MNHL-${block()}-${block()}`;
 }
 
-// Deterministic faux-QR matrix (boolean grid) from a code string.
 export function qrMatrix(code, size = 21) {
   let h = 5381;
   for (let i = 0; i < code.length; i++) h = (h * 33 + code.charCodeAt(i)) >>> 0;
@@ -89,7 +86,6 @@ export function qrMatrix(code, size = 21) {
     }
     grid.push(row);
   }
-  // Finder patterns (3 corners) for a believable QR look.
   const finder = (ox, oy) => {
     for (let y = 0; y < 7; y++)
       for (let x = 0; x < 7; x++) {
@@ -110,14 +106,11 @@ export function qrMatrix(code, size = 21) {
   return grid;
 }
 
-// --- Arabic localization (genuine bilingual output, not just RTL flip) ---
 const AR = {
-  // headings
   "DNA Identity Certificate": "شهادة الهوية الوراثية (DNA)",
   "Parentage Verification Certificate": "شهادة التحقق من النسب",
   "Population & Diversity Report": "تقرير التنوع الوراثي للمجتمع",
   "Registry Integrity Report": "تقرير سلامة السجل",
-  // fact / evidence labels
   "Registration ID": "رقم التسجيل",
   Name: "الاسم",
   "Line / Breed": "السلالة",
@@ -160,7 +153,6 @@ const AR = {
   "Missing paternal": "أبوة مفقودة",
   "Incomplete profiles": "بصمات غير مكتملة",
   "Suspected duplicates": "تكرارات مُشتبهة",
-  // values
   male: "ذكر",
   female: "أنثى",
   consistent: "متوافق",

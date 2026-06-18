@@ -64,7 +64,6 @@ function exportCsv(rows) {
   );
 }
 
-// Excel-compatible export (SpreadsheetML table; opens natively in Excel).
 function exportXlsx(rows) {
   const esc = (s) =>
     String(s)
@@ -351,9 +350,7 @@ export function RegistryView({ access }) {
             <button
               type="button"
               onClick={() =>
-                router.push(
-                  `/verify/batch?ids=${[...reg.selected].join(",")}`,
-                )
+                router.push(`/verify/batch?ids=${[...reg.selected].join(",")}`)
               }
             >
               <Icon name="git-fork" size={14} /> Batch verify

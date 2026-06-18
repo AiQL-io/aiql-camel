@@ -59,7 +59,6 @@ export function useBatchAudit(access) {
     timer.current = setInterval(() => {
       const start = cursorRef.current;
       const chunk = edges.slice(start, start + CHUNK);
-      // genuine incremental compute — verdicts produced here, not pre-computed
       const { results: chunkRes } = access.auditEdgeList(chunk, { tolerance });
       cursorRef.current = start + chunk.length;
       setResults((prev) => prev.concat(chunkRes));

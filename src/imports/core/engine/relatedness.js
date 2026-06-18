@@ -31,11 +31,10 @@ function lrDirection(a, b, c, d, pa, pb) {
   return { num, den };
 }
 
-// Queller & Goodnight (1989) per-locus, one direction (ref = a,b).
 function qgDirection(a, b, c, d, pa, pb) {
   const sa = 0.5 * ((a === c ? 1 : 0) + (a === d ? 1 : 0));
   const sb = 0.5 * ((b === c ? 1 : 0) + (b === d ? 1 : 0));
-  const h = 0.5 * (1 + (a === b ? 1 : 0)); // ha === hb
+  const h = 0.5 * (1 + (a === b ? 1 : 0));
   const num = sa - pa + (sb - pb);
   const den = h - pa + (h - pb);
   return { num, den };

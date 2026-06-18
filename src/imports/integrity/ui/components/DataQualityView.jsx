@@ -33,7 +33,7 @@ export function DataQualityView({ access }) {
   const burn = useMemo(() => {
     const byMonth = new Map();
     for (const a of alerts) {
-      const k = (a.detectedAt || "").slice(0, 7); // YYYY-MM
+      const k = (a.detectedAt || "").slice(0, 7);
       if (!k) continue;
       const o = byMonth.get(k) || { detected: 0, resolved: 0 };
       o.detected += 1;

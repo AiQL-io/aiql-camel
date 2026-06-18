@@ -48,7 +48,6 @@ export function buildPerLocusExport({ perLocus, panel, label }) {
   };
 }
 
-// GenAlEx-style allele-frequency sheet (CSV matrix: rows = allele, cols = locus)
 export function exportGenAlEx(access) {
   const loci = access.panel.loci || [];
   const alleles = [...new Set(loci.flatMap((l) => l.knownAlleles || []))].sort(
@@ -78,7 +77,6 @@ export function exportGenAlEx(access) {
   );
 }
 
-// Genepop-style allele-frequency listing
 export function exportGenepop(access) {
   const loci = access.panel.loci || [];
   const lines = [

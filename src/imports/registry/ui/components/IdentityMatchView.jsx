@@ -14,7 +14,7 @@ import { useIdentityMatch } from "@/imports/registry/hooks/useIdentityMatch.js";
 
 export function IdentityMatchView({ access }) {
   const m = useIdentityMatch(access);
-  const [mode, setMode] = useState("build"); // build | paste
+  const [mode, setMode] = useState("build");
   const [pasteText, setPasteText] = useState("");
   const fileRef = useRef(null);
 

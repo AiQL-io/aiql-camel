@@ -65,7 +65,7 @@ export function useRegistry(access) {
   const [ranges, setRanges] = useState(EMPTY_RANGES);
   const [sorts, setSorts] = useState([{ key: "registrationId", dir: "asc" }]);
   const [density, setDensity] = useState("comfortable");
-  const [view, setView] = useState("table"); // table | map
+  const [view, setView] = useState("table");
   const [selected, setSelected] = useState(() => new Set());
   const [savedViews, setSavedViews] = useState([]);
   const [activeChip, setActiveChip] = useState("");

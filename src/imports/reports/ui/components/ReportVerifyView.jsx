@@ -20,7 +20,7 @@ import {
 import { CertificatePreview } from "./CertificatePreview.jsx";
 
 export function ReportVerifyView({ access, code }) {
-  useReports(access); // ensure seeded
+  useReports(access);
   const router = useRouter();
   const [input, setInput] = useState(code || "");
 

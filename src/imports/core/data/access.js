@@ -318,8 +318,6 @@ export function createAccess(dataset) {
   }
 
   const freqByLocus = freqByLocusFromPanel(panel);
-  // Shared ComputedRelationship cache (Master §5.1), keyed by
-  // (animalA, animalB, panelId, estimator) so PopGen/Verification can reuse it.
   const relCache = new Map();
   function pairKey(x, y, estimator) {
     const pair = x < y ? `${x}|${y}` : `${y}|${x}`;
@@ -483,7 +481,6 @@ export function createAccess(dataset) {
     });
   }
 
-  // Build the list of declared edges to audit (cheap — no verdicts yet).
   function buildAuditEdges({ scope = "sire", ids = null } = {}) {
     const targets = ids ? ids.map((i) => byId.get(i)).filter(Boolean) : animals;
     const edges = [];
@@ -517,7 +514,6 @@ export function createAccess(dataset) {
     return edges;
   }
 
-  // Verify a (chunk of) pre-built edges — used for incremental, cancellable audits.
   function auditEdgeList(edges, { tolerance = 1 } = {}) {
     return runAuditEdges(edges, { tolerance });
   }
@@ -526,7 +522,6 @@ export function createAccess(dataset) {
     return runAuditEdges(buildAuditEdges({ scope, ids }), { tolerance });
   }
 
-  // ---- Registry integrity alerts (Master §6.7 / §5.1) ----
   function alertDate(a) {
     const prof = profByCamel.get(a.id);
     return (prof && prof.analysisDate) || a.createdAt || "2025-01-01";
@@ -537,10 +532,13 @@ export function createAccess(dataset) {
     let seq = 0;
     const mk = (o) => {
       seq += 1;
-      out.push({ id: `AL-${String(seq).padStart(5, "0")}`, relatedIds: [], ...o });
+      out.push({
+        id: `AL-${String(seq).padStart(5, "0")}`,
+        relatedIds: [],
+        ...o,
+      });
     };
 
-    // HWE / panel anomalies — the lowest-information / near-monomorphic loci
     const lowLoci = (panel.loci || [])
       .slice()
       .sort((x, y) => (x.PIC ?? 1) - (y.PIC ?? 1))
@@ -565,7 +563,11 @@ export function createAccess(dataset) {
 
     for (const a of animals) {
       const prof = profByCamel.get(a.id);
-      const base = { subjectId: a.id, region: a.region, detectedAt: alertDate(a) };
+      const base = {
+        subjectId: a.id,
+        region: a.region,
+        detectedAt: alertDate(a),
+      };
 
       if (a._duplicateOf) {
         mk({
@@ -698,8 +700,6 @@ export function createAccess(dataset) {
       missingMat: animals.filter((a) => !a.registeredParentDamId).length,
       missingPat: animals.filter((a) => !a.registeredParentSireId).length,
       duplicates: animals.filter((a) => a._duplicateOf).length,
-      // Profiled animals whose panel is under-typed — matches the
-      // incomplete_profile alert population (excludes not-yet-profiled animals).
       incomplete: animals.filter((a) => a.hasDNA && a.completenessScore < 1)
         .length,
       pctProfiled: Math.round((profiled / t) * 100),

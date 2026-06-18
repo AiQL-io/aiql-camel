@@ -31,7 +31,6 @@ export function ensureSeeded(access) {
   const dnaAnimals = access.animals.filter((a) => a.hasDNA);
   const pick = (i) => dnaAnimals[(i * 137) % dnaAnimals.length];
   const seeds = [];
-  // A spread of historical issued documents.
   for (let i = 0; i < 6; i++) {
     const a = pick(i);
     if (!a) continue;

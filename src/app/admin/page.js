@@ -1,5 +1,5 @@
-import { ModulePlaceholder } from "@/imports/core/components/ModulePlaceholder.jsx";
+import UsersRolesPage from "@/imports/admin/ui/pages/UsersRolesPage.jsx";
 
 export default function Page() {
-  return <ModulePlaceholder icon="gear-six" titleKey="nav.admin" />;
+  return <UsersRolesPage />;
 }

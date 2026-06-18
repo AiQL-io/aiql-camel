@@ -31,7 +31,6 @@ export function GeneticsShell({ access, children }) {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    // run once on mount; store setters are external mutations
     applyStateFromParams(new URLSearchParams(window.location.search));
   }, []);
 

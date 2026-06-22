@@ -1,17 +1,20 @@
 :root,
 [data-theme="light"] {
-  --aiql-mark-cyan: #0ff;
-  --aiql-mark-magenta: #f3f;
-  --aiql-mark-violet: #7b68ee;
-  --aiql-mark-aqua: #00ccf9;
+  --aiql-mark-cyan: #00ffff;
+  --aiql-mark-magenta: #ff33ff;
+  --aiql-mark-violet: #8743fd;
+  --aiql-mark-aqua: #18bbfd;
   --aiql-gradient: linear-gradient(
-    135deg,
-    var(--aiql-mark-cyan) 0%,
-    var(--aiql-mark-magenta) 100%
+    45deg,
+    #18bbfd 10%,
+    #2e7efc 32%,
+    #8743fd 100%
   );
-  --aiql-gradient-soft: linear-gradient(135deg, #00ffff2e, #ff33ff2e);
+  --aiql-gradient-soft: linear-gradient(135deg, #18bbfd2e, #8743fd2e);
+  --aiql-gradient-dark: linear-gradient(135deg, #03183f 0%, #0411b2 100%);
+  --aiql-gradient-light: linear-gradient(315deg, #0b38b20a 34%, #2e7efc1f 100%);
 
-  --bg-canvas: #f4f4f2;
+  --bg-canvas: #f5f7fb;
   --bg-surface: #fcfcfc;
   --bg-elevated: #fafaf9;
   --bg-muted: #ebebec;
@@ -19,16 +22,17 @@
   --border-strong: #a1a1aa;
 
   --fg-primary: #0a0a0c;
+  --fg-heading: #03183f;
   --fg-default: #000;
   --fg-secondary: #6a6a6b;
   --fg-tertiary: #8f8f90;
   --fg-disabled: #a1a1aa;
   --fg-on-accent: #fcfcfc;
 
-  --accent: #3e91db;
-  --accent-hover: #3a89cf;
-  --accent-pressed: #3378b5;
-  --accent-soft: #3378b51a;
+  --accent: #3f4dfb;
+  --accent-hover: #2e3be0;
+  --accent-pressed: #2530c4;
+  --accent-soft: #3f4dfb1a;
 
   --status-success: #4c8c4d;
   --status-success-strong: #52ad62;
@@ -53,6 +57,7 @@
   --border-strong: #3f3f46;
 
   --fg-primary: #fafaf9;
+  --fg-heading: #fafaf9;
   --fg-default: #fff;
   --fg-secondary: #a1a1aa;
   --fg-tertiary: #71717a;
@@ -103,8 +108,10 @@
   --shadow-lg: var(--shadow-popover);
   --shadow-panel: var(--shadow-popover);
 
+  --font-heading:
+    var(--font-montserrat), "Montserrat", ui-sans-serif, system-ui, sans-serif;
   --font-sans:
-    var(--font-dm-sans), "DM Sans", ui-sans-serif, system-ui, -apple-system,
+    var(--font-body), "Mulish", ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", sans-serif;
   --font-mono:
     var(--font-dm-mono), "DM Mono", "JetBrains Mono", ui-monospace,
@@ -182,6 +189,14 @@ body {
   transition:
     background 160ms ease,
     color 160ms ease;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-heading);
+  color: var(--fg-heading);
 }
 
 a {

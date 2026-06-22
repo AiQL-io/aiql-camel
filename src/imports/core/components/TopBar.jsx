@@ -23,13 +23,6 @@ export function TopBar({ onOpenSearch }) {
 
       <div className="actions">
         <SearchPill placeholder={t("common.search")} onClick={onOpenSearch} />
-        <span
-          className="dataset"
-          title={t("app.datasetIndicator", { count: "40,000" })}
-        >
-          <span className="dataset-dot" />
-          {t("app.datasetIndicator", { count: "40,000" })}
-        </span>
         <div className="bell-wrap">
           <IconButton name="bell" aria-label="Notifications" />
           <span className="bell-badge" />
@@ -110,26 +103,6 @@ const Header = styled.header`
     display: flex;
     align-items: center;
     gap: 10px;
-  }
-  .dataset {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    height: 28px;
-    padding: 0 10px;
-    border-radius: var(--radius-pill);
-    background: var(--bg-muted);
-    border: 1px solid var(--border);
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    color: var(--fg-subtle);
-    white-space: nowrap;
-  }
-  .dataset-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--status-success);
   }
   .bell-wrap {
     position: relative;

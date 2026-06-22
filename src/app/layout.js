@@ -1,4 +1,4 @@
-import { DM_Sans, DM_Mono } from "next/font/google";
+import { Montserrat, Mulish, DM_Mono } from "next/font/google";
 import "./globals.css";
 import StyledComponentsRegistry from "@/lib/registry";
 import { ThemeProvider } from "@/imports/core/providers/ThemeProvider.jsx";
@@ -6,9 +6,17 @@ import { I18nProvider } from "@/imports/core/providers/I18nProvider.jsx";
 import { RoleProvider } from "@/imports/core/providers/RoleProvider.jsx";
 import { Shell } from "@/imports/core/components/Shell.jsx";
 
-const dmSans = DM_Sans({
+const montserrat = Montserrat({
   subsets: ["latin"],
-  variable: "--font-dm-sans",
+  weight: ["500", "600", "700"],
+  variable: "--font-montserrat",
+  display: "swap",
+});
+
+const mulish = Mulish({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-body",
   display: "swap",
 });
 
@@ -33,7 +41,7 @@ export default function RootLayout({ children }) {
       lang="en"
       dir="ltr"
       data-theme="light"
-      className={`${dmSans.variable} ${dmMono.variable}`}
+      className={`${mulish.variable} ${montserrat.variable} ${dmMono.variable}`}
     >
       <head>
         <link

@@ -52,6 +52,18 @@ const Rail = styled.nav`
   border-radius: var(--radius-pill);
   box-shadow: var(--shadow-card);
   z-index: 20;
+
+  @media (max-width: 768px) {
+    inset-inline-start: 12px;
+    inset-inline-end: 12px;
+    top: auto;
+    bottom: 12px;
+    transform: none;
+    flex-direction: row;
+    justify-content: space-around;
+    gap: 2px;
+    border-radius: var(--radius-lg);
+  }
 `;
 
 const NavLink = styled(Link)`

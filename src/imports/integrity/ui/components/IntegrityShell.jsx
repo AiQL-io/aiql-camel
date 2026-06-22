@@ -42,6 +42,10 @@ const Wrap = styled.div`
   max-width: 1500px;
   margin: 0 auto;
   padding: 80px 40px 96px 128px;
+
+  @media (max-width: 768px) {
+    padding: 72px 16px 96px 16px;
+  }
   animation: aiql-fade-in 220ms ease-out;
 
   .ih h1 {

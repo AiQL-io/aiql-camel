@@ -67,4 +67,10 @@ const Root = styled.div`
     bottom: 24px;
     z-index: 25;
   }
+
+  @media (max-width: 768px) {
+    .assistant {
+      display: none;
+    }
+  }
 `;

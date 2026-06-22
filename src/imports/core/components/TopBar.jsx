@@ -99,6 +99,18 @@ const Header = styled.header`
   justify-content: space-between;
   padding: 0 32px;
 
+  @media (max-width: 768px) {
+    padding: 0 14px;
+    gap: 8px;
+
+    .actions {
+      gap: 6px;
+    }
+    .profile-meta {
+      display: none;
+    }
+  }
+
   .actions {
     display: flex;
     align-items: center;

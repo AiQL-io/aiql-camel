@@ -33,6 +33,11 @@ export const metadata = {
     "National camel genetic-intelligence platform. DNA identity, parentage verification, and population genetics.",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+};
+
 const themeScript = `(function(){try{var t=localStorage.getItem('manhal.theme');if(t!=='light'&&t!=='dark'){t=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';}document.documentElement.setAttribute('data-theme',t);var l=localStorage.getItem('manhal.locale');if(l==='ar'){document.documentElement.setAttribute('lang','ar');document.documentElement.setAttribute('dir','rtl');}}catch(e){}})();`;
 
 export default function RootLayout({ children }) {

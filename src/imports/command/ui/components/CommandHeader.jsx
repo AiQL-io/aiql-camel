@@ -56,5 +56,6 @@ const Header = styled.div`
     display: flex;
     align-items: center;
     gap: 10px;
+    margin-top: 21px;
   }
 `;

@@ -39,13 +39,16 @@ function buildActivity(access) {
   return items.slice(0, 5);
 }
 
-function spark(dir, n = 7) {
+function spark(dir, n = 28) {
+  const hash = (x) => (((Math.sin(x) * 43758.5453) % 1) + 1) % 1;
   const pts = [];
   for (let i = 0; i < n; i++) {
     const t = i / (n - 1);
-    const base = dir > 0 ? 0.55 + 0.45 * t : 1 - 0.4 * t;
-    const noise = (((Math.sin((i + 1) * 12.9898) * 43758.5453) % 1) + 1) % 1;
-    pts.push(+(base + noise * 0.08 - 0.04).toFixed(3));
+    const base = dir > 0 ? 0.5 + 0.5 * t : 1 - 0.45 * t;
+    const noise =
+      (hash((i + 1) * 12.9898) - 0.5) * 0.2 +
+      (hash((i + 1) * 78.233) - 0.5) * 0.12;
+    pts.push(+(base + noise).toFixed(3));
   }
   return pts;
 }
@@ -90,8 +93,6 @@ export function buildCommandData(access, period) {
       href: "/integrity",
       label: "Open integrity alerts",
       value: s.alerts.toLocaleString(),
-      delta: `${s.critical} critical`,
-      deltaTone: "down",
       spark: spark(1),
       sparkColor: "var(--status-danger)",
     },

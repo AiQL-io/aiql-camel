@@ -31,26 +31,42 @@ export function EgoNetwork({ focal, relatives = [], onSelect }) {
   return (
     <Wrap>
       <svg viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet">
-        {placed.map((n) => (
-          <line
-            key={`e_${n.animal.id}`}
-            x1={cx}
-            y1={cy}
-            x2={n.x}
-            y2={n.y}
-            stroke={color(n.r)}
-            strokeWidth={0.4 + n.r * 2.4}
-            opacity="0.6"
-          />
-        ))}
-        {placed.map((n) => (
+        <g
+          className="aiql-anim-fade"
+          style={{ animation: "aiql-fade 600ms ease-out" }}
+        >
+          {placed.map((n) => (
+            <line
+              key={`e_${n.animal.id}`}
+              x1={cx}
+              y1={cy}
+              x2={n.x}
+              y2={n.y}
+              stroke={color(n.r)}
+              strokeWidth={0.4 + n.r * 2.4}
+              opacity="0.6"
+            />
+          ))}
+        </g>
+        {placed.map((n, i) => (
           <g
             key={n.animal.id}
             className="node"
             onClick={() => go(n)}
             transform={`translate(${n.x} ${n.y})`}
           >
-            <circle r="4.4" fill={color(n.r)} />
+            <circle
+              r="4.4"
+              fill={color(n.r)}
+              className="aiql-anim-pop"
+              style={{
+                transformBox: "fill-box",
+                transformOrigin: "center",
+                animation: `aiql-pop 520ms cubic-bezier(0.2, 0.85, 0.3, 1.2) ${
+                  120 + i * 60
+                }ms both`,
+              }}
+            />
             <text y="-6" className="nlabel">
               {n.animal.name}
             </text>
@@ -60,7 +76,15 @@ export function EgoNetwork({ focal, relatives = [], onSelect }) {
           </g>
         ))}
         <g transform={`translate(${cx} ${cy})`}>
-          <circle r="6.5" className="focal" />
+          <circle
+            r="6.5"
+            className="focal aiql-anim-pop"
+            style={{
+              transformBox: "fill-box",
+              transformOrigin: "center",
+              animation: "aiql-pop 480ms cubic-bezier(0.2, 0.85, 0.3, 1.2)",
+            }}
+          />
           <text y="0.8" className="flabel">
             {focal?.name?.[0] || "•"}
           </text>

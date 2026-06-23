@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import styled from "styled-components";
-import { Icon } from "@/imports/core/components/Icon.jsx";
+import { DataTable } from "@/imports/core/components/DataTable.jsx";
 import { InbreedingFilters } from "./InbreedingFilters.jsx";
 import { InbreedingDrawer } from "./InbreedingDrawer.jsx";
 import { estimatorsFor, filterSortRows } from "./inbreedingHelpers.js";
@@ -14,7 +14,6 @@ export function InbreedingTable({
   selected,
   setSelected,
 }) {
-  const [sort, setSort] = useState({ key: "f", dir: "desc" });
   const [openId, setOpenId] = useState(null);
   const [facet, setFacet] = useState({
     breed: "",
@@ -39,8 +38,8 @@ export function InbreedingTable({
   }, [rows]);
 
   const filtered = useMemo(
-    () => filterSortRows(rows, fRange, facet, sort),
-    [rows, fRange, facet, sort],
+    () => filterSortRows(rows, fRange, facet, { key: "f", dir: "desc" }),
+    [rows, fRange, facet],
   );
 
   const toggle = (id) =>
@@ -50,13 +49,6 @@ export function InbreedingTable({
       else n.add(id);
       return n;
     });
-
-  const setSortKey = (key) =>
-    setSort((s) =>
-      s.key === key
-        ? { key, dir: s.dir === "asc" ? "desc" : "asc" }
-        : { key, dir: key === "f" ? "desc" : "asc" },
-    );
 
   const meanHe =
     (access.panel.loci || []).reduce((s, l) => s + (l.He ?? 0), 0) /
@@ -71,66 +63,99 @@ export function InbreedingTable({
         .slice(0, 6)
     : [];
 
-  const th = (k, label) => (
-    <button type="button" className="th" onClick={() => setSortKey(k)}>
-      {label}
-      {sort.key === k && (
-        <Icon name={sort.dir === "asc" ? "caret-up" : "caret-down"} size={10} />
-      )}
-    </button>
+  const columns = useMemo(
+    () => [
+      {
+        id: "ck",
+        header: "",
+        enableSorting: false,
+        cell: (c) => {
+          const r = c.row.original;
+          return (
+            <span className="ck" onClick={(e) => e.stopPropagation()}>
+              <input
+                type="checkbox"
+                checked={selected.has(r.id)}
+                onChange={() => toggle(r.id)}
+              />
+            </span>
+          );
+        },
+      },
+      {
+        id: "reg",
+        header: "Animal",
+        accessorKey: "reg",
+        cell: (c) => (
+          <button
+            type="button"
+            className="reg"
+            onClick={() => setOpenId(c.row.original.id)}
+          >
+            {c.getValue()}
+          </button>
+        ),
+      },
+      {
+        id: "f",
+        header: "F",
+        accessorFn: (r) => r.f,
+        cell: (c) => {
+          const r = c.row.original;
+          return (
+            <span className="fcell">
+              <span className="ftrack">
+                <span
+                  className="fbar"
+                  style={{ width: `${(r.f / 0.5) * 100}%` }}
+                />
+              </span>
+              <b>{r.f.toFixed(3)}</b>
+              <em>p{r.percentile}</em>
+            </span>
+          );
+        },
+      },
+      {
+        id: "breed",
+        header: "Line",
+        accessorKey: "breed",
+        cell: (c) => <span className="t">{c.getValue()}</span>,
+      },
+      {
+        id: "region",
+        header: "Region",
+        accessorKey: "region",
+        cell: (c) => <span className="t">{c.getValue()}</span>,
+      },
+      {
+        id: "ownerName",
+        header: "Owner",
+        accessorKey: "ownerName",
+        cell: (c) => <span className="t owner">{c.getValue()}</span>,
+      },
+      {
+        id: "relatives",
+        header: "Rel.",
+        accessorFn: (r) => r.relatives,
+        meta: { align: "end" },
+        cell: (c) => <span className="mono">{c.row.original.relatives}</span>,
+      },
+    ],
+    [selected],
   );
 
   return (
     <>
       <InbreedingFilters facet={facet} setFacet={setFacet} facets={facets} />
-      <Table>
-        <div className="thead">
-          <span className="ck" />
-          {th("reg", "Animal")}
-          {th("f", "F")}
-          {th("breed", "Line")}
-          {th("region", "Region")}
-          {th("ownerName", "Owner")}
-          {th("relatives", "Rel.")}
-        </div>
-        <div className="tbody">
-          {filtered.map((r) => (
-            <div className="trow" key={r.id}>
-              <span className="ck" onClick={(e) => e.stopPropagation()}>
-                <input
-                  type="checkbox"
-                  checked={selected.has(r.id)}
-                  onChange={() => toggle(r.id)}
-                />
-              </span>
-              <button
-                type="button"
-                className="reg"
-                onClick={() => setOpenId(r.id)}
-              >
-                {r.reg}
-              </button>
-              <span className="fcell">
-                <span className="ftrack">
-                  <span
-                    className="fbar"
-                    style={{ width: `${(r.f / 0.5) * 100}%` }}
-                  />
-                </span>
-                <b>{r.f.toFixed(3)}</b>
-                <em>p{r.percentile}</em>
-              </span>
-              <span className="t">{r.breed}</span>
-              <span className="t">{r.region}</span>
-              <span className="t owner">{r.ownerName}</span>
-              <span className="mono">{r.relatives}</span>
-            </div>
-          ))}
-          {filtered.length === 0 && (
-            <div className="empty">No animals match this filter.</div>
-          )}
-        </div>
-      </Table>
+      <CellStyles>
+        <DataTable
+          columns={columns}
+          data={filtered}
+          maxHeight={460}
+          emptyMessage="No animals match this filter."
+        />
+      </CellStyles>
 
       <InbreedingDrawer
         animal={animal}
@@ -142,46 +167,9 @@ export function InbreedingTable({
   );
 }
 
-const Table = styled.div`
-  .thead,
-  .trow {
-    display: grid;
-    grid-template-columns: 30px 116px 1.3fr 92px 96px 110px 44px;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 12px;
-  }
-  .thead {
-    background: var(--bg-muted);
-    border-bottom: 1px solid var(--border);
-  }
-  .th {
-    display: inline-flex;
-    align-items: center;
-    gap: 3px;
-    border: none;
-    background: transparent;
-    color: var(--fg-subtle);
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    cursor: pointer;
-    padding: 0;
-  }
-  .tbody {
-    max-height: 460px;
-    overflow-y: auto;
-  }
-  .trow {
-    border-bottom: 1px solid var(--separator);
-    font-size: var(--text-sm);
-  }
-  .trow:hover {
-    background: var(--surface-2);
-  }
+const CellStyles = styled.div`
   .ck {
-    display: flex;
+    display: inline-flex;
     align-items: center;
   }
   .reg {
@@ -195,7 +183,7 @@ const Table = styled.div`
     padding: 0;
   }
   .fcell {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 8px;
   }
@@ -210,7 +198,14 @@ const Table = styled.div`
   .fbar {
     display: block;
     height: 100%;
-    background: var(--danger);
+    background: var(--aiql-bar-gradient);
+    transform-origin: left center;
+    animation: aiql-grow-x 720ms cubic-bezier(0.2, 0.75, 0.25, 1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fbar {
+      animation: none;
+    }
   }
   .fcell b {
     font-family: var(--font-mono);
@@ -225,19 +220,16 @@ const Table = styled.div`
     font-size: var(--text-xs);
   }
   .t.owner {
+    display: inline-block;
+    max-width: 110px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    vertical-align: middle;
   }
   .mono {
     font-family: var(--font-mono);
     font-size: var(--text-xs);
     color: var(--fg-subtle);
-  }
-  .empty {
-    padding: 24px;
-    text-align: center;
-    color: var(--fg-subtle);
-    font-size: var(--text-sm);
   }
 `;

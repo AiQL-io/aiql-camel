@@ -1,10 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import Link from "next/link";
 import styled from "styled-components";
 import { Chip } from "@/imports/core/components/Chip.jsx";
 import { Icon } from "@/imports/core/components/Icon.jsx";
+import { DataTable } from "@/imports/core/components/DataTable.jsx";
 import {
   VERDICT_TONE,
   exportCsv,
@@ -19,6 +20,76 @@ export function AuditTable({
   summary,
   total,
 }) {
+  const data = useMemo(() => rows.slice(0, 200), [rows]);
+
+  const columns = useMemo(
+    () => [
+      {
+        id: "offspring",
+        header: "Offspring",
+        accessorKey: "offspring",
+        cell: (c) => (
+          <Link
+            href={`/registry/${c.row.original.offspringId}`}
+            className="off"
+          >
+            {c.getValue()}
+          </Link>
+        ),
+      },
+      {
+        id: "parent",
+        header: "Declared parent",
+        accessorKey: "parent",
+        cell: (c) => (
+          <span className="mono">
+            {c.getValue()} <em>({c.row.original.role})</em>
+          </span>
+        ),
+      },
+      {
+        id: "verdict",
+        header: "Verdict",
+        accessorKey: "verdict",
+        cell: (c) => (
+          <CapChip size="sm" tone={VERDICT_TONE[c.getValue()]}>
+            {c.getValue()}
+          </CapChip>
+        ),
+      },
+      {
+        id: "mismatch",
+        header: "Mismatch",
+        accessorKey: "mismatchCount",
+        cell: (c) => <span className="mono">{c.getValue() ?? "—"}</span>,
+      },
+      {
+        id: "lineRegion",
+        header: "Line · Region",
+        accessorFn: (r) => `${r.breed} · ${r.region}`,
+        cell: (c) => <span className="muted">{c.getValue()}</span>,
+      },
+      {
+        id: "open",
+        header: "",
+        enableSorting: false,
+        meta: { align: "end" },
+        cell: (c) => {
+          const r = c.row.original;
+          return (
+            <Link
+              href={`/verify?offspring=${r.offspringId}&${r.role}=${r.parentId}&mode=${r.role === "dam" ? "maternity" : "paternity"}`}
+              className="open"
+            >
+              Workbench <Icon name="arrow-right" size={11} />
+            </Link>
+          );
+        },
+      },
+    ],
+    [],
+  );
+
   return (
     <>
       <BulkBar>
@@ -38,49 +109,22 @@ export function AuditTable({
         )}
       </BulkBar>
 
-      <Table>
-        <div className="thead">
-          <span>Offspring</span>
-          <span>Declared parent</span>
-          <span>Verdict</span>
-          <span>Mismatch</span>
-          <span>Line · Region</span>
-          <span />
-        </div>
-        <div className="tbody">
-          {rows.slice(0, 200).map((r, i) => (
-            <div className="trow" key={`${r.offspringId}-${r.role}-${i}`}>
-              <Link href={`/registry/${r.offspringId}`} className="off">
-                {r.offspring}
-              </Link>
-              <span className="mono">
-                {r.parent} <em>({r.role})</em>
-              </span>
-              <span>
-                <CapChip size="sm" tone={VERDICT_TONE[r.verdict]}>
-                  {r.verdict}
-                </CapChip>
-              </span>
-              <span className="mono">{r.mismatchCount ?? "—"}</span>
-              <span className="muted">
-                {r.breed} · {r.region}
-              </span>
-              <Link
-                href={`/verify?offspring=${r.offspringId}&${r.role}=${r.parentId}&mode=${r.role === "dam" ? "maternity" : "paternity"}`}
-                className="open"
-              >
-                Workbench <Icon name="arrow-right" size={11} />
-              </Link>
-            </div>
-          ))}
-          {rows.length > 200 && (
-            <div className="more">
-              Showing first 200 of {rows.length.toLocaleString()} — export for
-              the full set.
-            </div>
-          )}
-        </div>
-      </Table>
+      <TableWrap>
+        <CellStyles>
+          <DataTable
+            columns={columns}
+            data={data}
+            maxHeight={460}
+            emptyMessage="No declared links match these filters."
+          />
+        </CellStyles>
+        {rows.length > 200 && (
+          <div className="more">
+            Showing first 200 of {rows.length.toLocaleString()} — export for the
+            full set.
+          </div>
+        )}
+      </TableWrap>
     </>
   );
 }
@@ -113,37 +157,17 @@ const BulkBar = styled.div`
   }
 `;
 
-const Table = styled.div`
+const TableWrap = styled.div`
   margin-top: 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  overflow: hidden;
 
-  .thead,
-  .trow {
-    display: grid;
-    grid-template-columns: 1.3fr 1.6fr 110px 80px 1.3fr 110px;
-    gap: 10px;
-    align-items: center;
-    padding: 10px 14px;
-  }
-  .thead {
-    background: var(--bg-muted);
-    border-bottom: 1px solid var(--border);
-    font-family: var(--font-mono);
+  .more {
+    padding: 12px 14px;
     font-size: var(--text-xs);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
     color: var(--fg-subtle);
   }
-  .tbody {
-    max-height: 460px;
-    overflow-y: auto;
-  }
-  .trow {
-    border-bottom: 1px solid var(--separator);
-    font-size: var(--text-sm);
-  }
+`;
+
+const CellStyles = styled.div`
   .off {
     font-family: var(--font-mono);
     font-size: var(--text-xs);
@@ -168,10 +192,5 @@ const Table = styled.div`
     gap: 4px;
     font-size: var(--text-xs);
     color: var(--fg-secondary);
-  }
-  .more {
-    padding: 12px 14px;
-    font-size: var(--text-xs);
-    color: var(--fg-subtle);
   }
 `;

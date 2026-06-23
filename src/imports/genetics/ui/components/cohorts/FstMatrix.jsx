@@ -15,7 +15,7 @@ const BAND_COLOR = {
 function cellBg(cell) {
   if (cell.band === "self") return "var(--surface-2)";
   const t = Math.min(1, cell.value / 0.2);
-  return `color-mix(in srgb, var(--danger) ${Math.round(t * 70 + 8)}%, var(--surface))`;
+  return `color-mix(in srgb, #3f4dfb ${Math.round(t * 70 + 8)}%, var(--surface))`;
 }
 
 export function FstMatrix({ metrics, fstMatrix }) {

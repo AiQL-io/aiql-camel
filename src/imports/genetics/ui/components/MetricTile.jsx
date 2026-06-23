@@ -5,6 +5,7 @@ import styled from "styled-components";
 import { Card } from "@/imports/core/components/Card.jsx";
 import { Icon } from "@/imports/core/components/Icon.jsx";
 import { Sparkline } from "@/imports/core/components/Sparkline.jsx";
+import { useContainerWidth } from "@/imports/core/components/charts/useChartSize.js";
 import { openMethod } from "@/imports/genetics/state/methodsStore.js";
 
 export function MetricTile({
@@ -22,6 +23,7 @@ export function MetricTile({
   onClick,
 }) {
   const clickable = Boolean(href || onClick);
+  const [sparkRef, sparkW] = useContainerWidth();
   return (
     <Root $clickable={clickable} interactive={clickable} onClick={onClick}>
       <div className="head">
@@ -51,8 +53,8 @@ export function MetricTile({
         {delta && <span className={`delta ${deltaTone}`}>{delta}</span>}
       </div>
       {spark && spark.length > 1 && (
-        <div className="spark">
-          <Sparkline data={spark} width={140} height={28} />
+        <div className="spark" ref={sparkRef}>
+          {sparkW > 0 && <Sparkline data={spark} width={sparkW} height={44} />}
         </div>
       )}
     </Root>
@@ -126,12 +128,11 @@ const Root = styled(Card)`
     color: var(--danger);
   }
   .spark {
+    width: 100%;
     margin-top: auto;
     padding-top: 12px;
   }
   .spark svg {
-    width: 100%;
-    height: auto;
     display: block;
   }
 `;

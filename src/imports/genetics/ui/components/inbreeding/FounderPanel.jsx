@@ -93,7 +93,14 @@ const Root = styled.div`
   .bar {
     display: block;
     height: 100%;
-    background: var(--danger);
+    background: var(--aiql-bar-gradient);
+    transform-origin: left center;
+    animation: aiql-grow-x 720ms cubic-bezier(0.2, 0.75, 0.25, 1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bar {
+      animation: none;
+    }
   }
   .kin {
     font-family: var(--font-mono);

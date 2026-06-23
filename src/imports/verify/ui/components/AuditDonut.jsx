@@ -15,7 +15,13 @@ export function AuditDonut({ summary, total }) {
     offset: lens.slice(0, i).reduce((sum, l) => sum + l, 0),
   }));
   return (
-    <svg viewBox="0 0 130 130" width="130" height="130">
+    <svg
+      viewBox="0 0 130 130"
+      width="130"
+      height="130"
+      className="aiql-anim-pop"
+      style={{ animation: "aiql-pop 720ms cubic-bezier(0.2, 0.75, 0.25, 1)" }}
+    >
       <circle
         cx="65"
         cy="65"
@@ -24,9 +30,10 @@ export function AuditDonut({ summary, total }) {
         stroke="var(--surface-2)"
         strokeWidth="14"
       />
-      {segs.map((s) => (
+      {segs.map((s, i) => (
         <circle
           key={s.key}
+          className="aiql-anim-ring"
           cx="65"
           cy="65"
           r={r}
@@ -36,6 +43,10 @@ export function AuditDonut({ summary, total }) {
           strokeDasharray={`${s.len} ${c - s.len}`}
           strokeDashoffset={-s.offset}
           transform="rotate(-90 65 65)"
+          style={{
+            "--ring-dash": -s.offset + s.len,
+            animation: `aiql-ring-draw 700ms ease-out ${i * 120}ms both`,
+          }}
         />
       ))}
       <text x="65" y="62" textAnchor="middle" className="dn">

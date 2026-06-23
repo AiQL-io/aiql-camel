@@ -1,7 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import styled from "styled-components";
+import { LineChart, Line, Tooltip } from "recharts";
+import { tooltipStyle } from "@/imports/core/components/charts/chartTheme.js";
+import { useContainerSize } from "@/imports/core/components/charts/useChartSize.js";
 
 const SERIES = [
   { key: "ne", label: "Ne", color: "var(--accent)" },
@@ -9,26 +12,31 @@ const SERIES = [
   { key: "he", label: "He", color: "var(--status-success)" },
 ];
 
-export function TimeSeriesChart({ data, height = 200 }) {
+export function TimeSeriesChart({ data }) {
+  const [ref, width, measuredH] = useContainerSize();
+
+  const series = useMemo(() => {
+    if (!data || data.length < 2) return [];
+    const ranges = {};
+    for (const s of SERIES) {
+      const vals = data.map((d) => d[s.key]);
+      ranges[s.key] = { min: Math.min(...vals), max: Math.max(...vals) };
+    }
+    return data.map((d) => {
+      const row = { label: d.label };
+      for (const s of SERIES) {
+        const { min, max } = ranges[s.key];
+        row[s.key] = (d[s.key] - min) / (max - min || 1);
+        row[`${s.key}_raw`] = d[s.key];
+      }
+      return row;
+    });
+  }, [data]);
+
   if (!data || data.length < 2)
     return <Empty>Not enough birth-cohort history in this scope.</Empty>;
-  const W = 460;
-  const H = height;
-  const pad = 12;
-  const n = data.length;
-  const x = (i) => pad + (i / (n - 1)) * (W - 2 * pad);
 
-  const line = (key) => {
-    const vals = data.map((d) => d[key]);
-    const min = Math.min(...vals);
-    const max = Math.max(...vals);
-    return data
-      .map((d, i) => {
-        const y = H - pad - ((d[key] - min) / (max - min || 1)) * (H - 2 * pad);
-        return `${i === 0 ? "M" : "L"}${x(i).toFixed(1)} ${y.toFixed(1)}`;
-      })
-      .join(" ");
-  };
+  const plotH = Math.max(160, measuredH);
 
   return (
     <Root>
@@ -39,18 +47,40 @@ export function TimeSeriesChart({ data, height = 200 }) {
           </span>
         ))}
       </div>
-      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
-        {SERIES.map((s) => (
-          <path
-            key={s.key}
-            d={line(s.key)}
-            fill="none"
-            stroke={s.color}
-            strokeWidth={2}
-            strokeLinejoin="round"
-          />
-        ))}
-      </svg>
+      <div ref={ref} className="plot">
+        {width > 0 && measuredH > 0 && (
+          <LineChart
+            width={width}
+            height={plotH}
+            data={series}
+            margin={{ top: 6, right: 4, bottom: 4, left: 4 }}
+          >
+            <Tooltip
+              cursor={{ stroke: "var(--border)" }}
+              contentStyle={tooltipStyle}
+              labelFormatter={(_, p) => p?.[0]?.payload?.label ?? ""}
+              formatter={(v, name, item) => {
+                const s = SERIES.find((x) => x.label === name);
+                const raw = s ? item.payload[`${s.key}_raw`] : v;
+                return [raw, name];
+              }}
+            />
+            {SERIES.map((s) => (
+              <Line
+                key={s.key}
+                type="monotone"
+                dataKey={s.key}
+                name={s.label}
+                stroke={s.color}
+                strokeWidth={2}
+                dot={false}
+                isAnimationActive
+                animationDuration={650}
+              />
+            ))}
+          </LineChart>
+        )}
+      </div>
       <div className="scale">
         <span>{data[0].label}</span>
         <span>{data[data.length - 1].label}</span>
@@ -64,11 +94,10 @@ const Root = styled.div`
   flex-direction: column;
   height: 100%;
 
-  svg {
+  .plot {
     width: 100%;
     flex: 1;
     min-height: 160px;
-    display: block;
   }
   .legend {
     display: flex;

@@ -37,6 +37,7 @@ export function ScoreRing({
           strokeWidth={stroke}
         />
         <circle
+          className="aiql-anim-ring"
           cx={size / 2}
           cy={size / 2}
           r={r}
@@ -45,6 +46,11 @@ export function ScoreRing({
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={`${dash} ${c}`}
+          strokeDashoffset={0}
+          style={{
+            "--ring-dash": dash,
+            animation: "aiql-ring-draw 760ms cubic-bezier(0.2, 0.75, 0.25, 1)",
+          }}
         />
       </svg>
       {showValue && <span className="value">{Math.round(value)}</span>}

@@ -1,62 +1,77 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import styled from "styled-components";
+import { BarChart, Bar, XAxis, LabelList, Tooltip } from "recharts";
+import {
+  AXIS,
+  tooltipStyle,
+} from "@/imports/core/components/charts/chartTheme.js";
+import { useContainerWidth } from "@/imports/core/components/charts/useChartSize.js";
+
+const HEIGHT = 140;
 
 export function ScreePlot({ scree }) {
-  const max = Math.max(...scree.map((s) => s.variance), 0.01);
+  const [ref, width] = useContainerWidth();
+  const data = useMemo(
+    () =>
+      scree.map((s) => ({
+        axis: s.axis,
+        variance: s.variance,
+        pct: Math.round(s.variance * 100),
+      })),
+    [scree],
+  );
+
   return (
-    <Root>
-      {scree.map((s) => (
-        <div className="bar" key={s.axis}>
-          <span className="track">
-            <span
-              className="fill"
-              style={{ height: `${(s.variance / max) * 100}%` }}
+    <Root ref={ref} style={{ height: HEIGHT }}>
+      {width > 0 && (
+        <BarChart
+          width={width}
+          height={HEIGHT}
+          data={data}
+          margin={{ top: 16, right: 4, bottom: 4, left: 4 }}
+        >
+          <XAxis
+            dataKey="axis"
+            tickLine={false}
+            axisLine={false}
+            tick={{
+              fill: AXIS.tick,
+              fontSize: 11,
+              fontFamily: AXIS.fontFamily,
+            }}
+          />
+          <Tooltip
+            cursor={{ fill: "var(--surface-2)" }}
+            contentStyle={tooltipStyle}
+            formatter={(v, _n, item) => [`${item.payload.pct}%`, "variance"]}
+            labelFormatter={() => ""}
+          />
+          <Bar
+            dataKey="variance"
+            fill="var(--accent)"
+            radius={[3, 3, 0, 0]}
+            isAnimationActive
+            animationDuration={650}
+          >
+            <LabelList
+              dataKey="pct"
+              position="top"
+              formatter={(v) => `${v}%`}
+              style={{
+                fill: "var(--fg)",
+                fontSize: 11,
+                fontFamily: "var(--font-mono)",
+              }}
             />
-          </span>
-          <span className="lab">{s.axis}</span>
-          <span className="val">{Math.round(s.variance * 100)}%</span>
-        </div>
-      ))}
+          </Bar>
+        </BarChart>
+      )}
     </Root>
   );
 }
 
 const Root = styled.div`
-  display: flex;
-  align-items: flex-end;
-  gap: 10px;
-  height: 140px;
-
-  .bar {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    flex: 1;
-    height: 100%;
-    justify-content: flex-end;
-  }
-  .track {
-    width: 60%;
-    flex: 1;
-    display: flex;
-    align-items: flex-end;
-  }
-  .fill {
-    width: 100%;
-    background: var(--accent);
-    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
-  }
-  .lab {
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    color: var(--fg-subtle);
-  }
-  .val {
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    color: var(--fg);
-  }
+  width: 100%;
 `;

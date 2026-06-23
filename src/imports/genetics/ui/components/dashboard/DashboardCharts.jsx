@@ -1,13 +1,19 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import Link from "next/link";
 import styled from "styled-components";
+import { BarChart, Bar, XAxis, Tooltip } from "recharts";
 import { Select } from "@/imports/core/components/Select.jsx";
 import { Histogram } from "@/imports/core/components/Histogram.jsx";
 import { BarList } from "@/imports/core/components/BarList.jsx";
 import { RegionMap } from "@/imports/core/components/RegionMap.jsx";
 import { Icon } from "@/imports/core/components/Icon.jsx";
+import {
+  AXIS,
+  tooltipStyle,
+} from "@/imports/core/components/charts/chartTheme.js";
+import { useContainerWidth } from "@/imports/core/components/charts/useChartSize.js";
 import { HoHeChart } from "./HoHeChart.jsx";
 import { MiniPcoa } from "./MiniPcoa.jsx";
 import { TimeSeriesChart } from "./TimeSeriesChart.jsx";
@@ -81,11 +87,55 @@ export function SpectrumCard({ spectrum, locus, setLocus, loci }) {
         />
       }
     >
-      <BarList
-        data={spectrum.map((s) => ({ label: s.allele, value: s.freq }))}
-        color="var(--status-info, var(--accent))"
-      />
+      <SpectrumChart spectrum={spectrum} />
     </CardPanel>
+  );
+}
+
+function SpectrumChart({ spectrum }) {
+  const [ref, width] = useContainerWidth();
+  const data = useMemo(
+    () => spectrum.map((s) => ({ allele: String(s.allele), freq: s.freq })),
+    [spectrum],
+  );
+  const height = 200;
+
+  return (
+    <div ref={ref} style={{ width: "100%", height }}>
+      {width > 0 && (
+        <BarChart
+          width={width}
+          height={height}
+          data={data}
+          margin={{ top: 6, right: 4, bottom: 4, left: 4 }}
+        >
+          <XAxis
+            dataKey="allele"
+            tickLine={false}
+            axisLine={{ stroke: AXIS.stroke }}
+            tick={{
+              fill: AXIS.tick,
+              fontSize: 11,
+              fontFamily: AXIS.fontFamily,
+            }}
+            interval="preserveStartEnd"
+          />
+          <Tooltip
+            cursor={{ fill: "var(--surface-2)" }}
+            contentStyle={tooltipStyle}
+            formatter={(v) => [v.toLocaleString(), "freq"]}
+            labelFormatter={(l) => `Allele ${l}`}
+          />
+          <Bar
+            dataKey="freq"
+            fill="var(--status-info, var(--accent))"
+            radius={[3, 3, 0, 0]}
+            isAnimationActive
+            animationDuration={650}
+          />
+        </BarChart>
+      )}
+    </div>
   );
 }
 

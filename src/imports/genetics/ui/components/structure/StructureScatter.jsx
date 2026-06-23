@@ -11,9 +11,11 @@ const PAD = 16;
 
 function fRamp(f) {
   const t = Math.min(1, f / 0.35);
-  const r = Math.round(40 + t * 200);
-  const g = Math.round(180 - t * 150);
-  return `rgb(${r},${g},90)`;
+  const lerp = (a, b) => Math.round(a + (b - a) * t);
+  const r = lerp(245, 63);
+  const g = lerp(247, 77);
+  const b = lerp(251, 251);
+  return `rgb(${r},${g},${b})`;
 }
 
 export function StructureScatter({
@@ -257,31 +259,38 @@ export function StructureScatter({
             strokeLinejoin="round"
           />
         ))}
-        {projected.map(({ p, c }) => {
-          const isOut = p.outlier;
-          const isSel = selectedIds && selectedIds.has(p.id);
-          return (
-            <circle
-              key={p.id}
-              cx={tsx(c[0])}
-              cy={tsy(c[1])}
-              r={
-                (isSel ? 4 : isOut ? 3.4 : 2.4) *
-                Math.min(1.8, Math.sqrt(view.k))
-              }
-              fill={colorFor(p)}
-              fillOpacity={isSel ? 1 : isOut ? 1 : 0.72}
-              stroke={isSel ? "var(--accent)" : isOut ? "var(--fg)" : "none"}
-              strokeWidth={isSel ? 1.6 : isOut ? 1 : 0}
-              onMouseEnter={() => setHover({ p, cx: tsx(c[0]), cy: tsy(c[1]) })}
-              onMouseLeave={() => setHover(null)}
-              onClick={() =>
-                mode === "select" && onPointClick && onPointClick(p.id)
-              }
-              style={{ cursor: "pointer" }}
-            />
-          );
-        })}
+        <g
+          className="aiql-anim-fade"
+          style={{ animation: "aiql-fade 700ms ease-out" }}
+        >
+          {projected.map(({ p, c }) => {
+            const isOut = p.outlier;
+            const isSel = selectedIds && selectedIds.has(p.id);
+            return (
+              <circle
+                key={p.id}
+                cx={tsx(c[0])}
+                cy={tsy(c[1])}
+                r={
+                  (isSel ? 4 : isOut ? 3.4 : 2.4) *
+                  Math.min(1.8, Math.sqrt(view.k))
+                }
+                fill={colorFor(p)}
+                fillOpacity={isSel ? 1 : isOut ? 1 : 0.72}
+                stroke={isSel ? "var(--accent)" : isOut ? "var(--fg)" : "none"}
+                strokeWidth={isSel ? 1.6 : isOut ? 1 : 0}
+                onMouseEnter={() =>
+                  setHover({ p, cx: tsx(c[0]), cy: tsy(c[1]) })
+                }
+                onMouseLeave={() => setHover(null)}
+                onClick={() =>
+                  mode === "select" && onPointClick && onPointClick(p.id)
+                }
+                style={{ cursor: "pointer" }}
+              />
+            );
+          })}
+        </g>
         {drag && (
           <rect
             x={Math.min(drag.x0, drag.x1)}

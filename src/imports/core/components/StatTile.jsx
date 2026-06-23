@@ -3,12 +3,14 @@
 import React from "react";
 import styled from "styled-components";
 import { Overline } from "@/imports/core/components/Overline.jsx";
+import { Icon } from "@/imports/core/components/Icon.jsx";
 import { Sparkline } from "./Sparkline.jsx";
+import { useContainerWidth } from "@/imports/core/components/charts/useChartSize.js";
 
 const TONE = {
-  up: "var(--status-success)",
-  down: "var(--status-danger)",
-  neutral: "var(--fg-subtle)",
+  up: { fg: "var(--status-success)", bg: "var(--success-soft)" },
+  down: { fg: "var(--status-danger)", bg: "var(--danger-soft)" },
+  neutral: { fg: "var(--fg-subtle)", bg: "var(--surface-2)" },
 };
 
 export function StatTile({
@@ -20,25 +22,33 @@ export function StatTile({
   spark,
   sparkColor = "var(--accent)",
 }) {
+  const [ref, width] = useContainerWidth();
+  const tone = TONE[deltaTone] || TONE.neutral;
+
   return (
-    <Root $deltaColor={TONE[deltaTone]}>
-      <div className="head">
-        <Overline>{label}</Overline>
-        {delta && (
-          <span className="delta">
-            {/^[+\-−]/.test(delta) &&
-              (deltaTone === "up" ? "↑ " : deltaTone === "down" ? "↓ " : "")}
-            {delta}
-          </span>
-        )}
-      </div>
+    <Root $fg={tone.fg} $bg={tone.bg}>
+      <Overline>{label}</Overline>
       <div className="figure">
         <span className="value">{value}</span>
         {unit && <span className="unit">{unit}</span>}
       </div>
+      {delta && (
+        <span className="delta">
+          {deltaTone === "up" && <Icon name="trend-up" size={11} />}
+          {deltaTone === "down" && <Icon name="trend-down" size={11} />}
+          {delta}
+        </span>
+      )}
       {spark && (
-        <div className="spark">
-          <Sparkline data={spark} color={sparkColor} width={120} height={28} />
+        <div className="spark" ref={ref}>
+          {width > 0 && (
+            <Sparkline
+              data={spark}
+              color={sparkColor}
+              width={width}
+              height={44}
+            />
+          )}
         </div>
       )}
     </Root>
@@ -48,37 +58,42 @@ export function StatTile({
 const Root = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
 
-  .head {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 8px;
-  }
-  .delta {
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    color: ${(p) => p.$deltaColor};
-    white-space: nowrap;
-  }
   .figure {
     display: flex;
     align-items: baseline;
-    gap: 4px;
+    gap: 8px;
   }
   .value {
-    font-size: 28px;
-    font-weight: var(--weight-medium);
-    letter-spacing: -0.01em;
+    font-size: 30px;
+    line-height: 1.1;
+    font-weight: var(--weight-semibold);
+    letter-spacing: -0.02em;
     color: var(--fg);
+    font-variant-numeric: tabular-nums;
   }
   .unit {
     font-size: var(--text-sm);
     color: var(--fg-subtle);
   }
+  .delta {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+    color: ${(p) => p.$fg};
+    background: ${(p) => p.$bg};
+    padding: 2px 8px;
+    border-radius: var(--radius-pill);
+    white-space: nowrap;
+  }
   .spark {
-    margin-top: 2px;
+    width: 100%;
+    height: 44px;
+    margin-top: 4px;
   }
 `;

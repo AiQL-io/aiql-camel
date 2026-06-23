@@ -2,9 +2,9 @@
 
 import React, { useState, useMemo } from "react";
 import styled from "styled-components";
-import { Card } from "@/imports/core/components/Card.jsx";
 import { Select } from "@/imports/core/components/Select.jsx";
 import { Icon } from "@/imports/core/components/Icon.jsx";
+import { DataTable } from "@/imports/core/components/DataTable.jsx";
 import { useAdmin, ROLE_DEFS } from "@/imports/admin/state/adminStore.js";
 
 const ENTITY_ICON = {
@@ -58,6 +58,65 @@ export function AuditLogView({ access }) {
     });
   }, [audit, q, actor, entity]);
 
+  const columns = useMemo(
+    () => [
+      {
+        id: "when",
+        header: "When",
+        accessorKey: "timestamp",
+        cell: (c) => (
+          <span className="when">
+            {new Date(c.getValue()).toLocaleString()}
+          </span>
+        ),
+      },
+      {
+        id: "actor",
+        header: "Actor",
+        accessorKey: "actorName",
+        cell: (c) => <span className="actor">{c.getValue()}</span>,
+      },
+      {
+        id: "action",
+        header: "Action",
+        accessorKey: "action",
+        enableSorting: false,
+        cell: (c) => {
+          const a = c.row.original;
+          return (
+            <span className="action">
+              {a.action}
+              {a.before != null && a.after != null && (
+                <span className="delta">
+                  <span className="b">{a.before}</span>
+                  <Icon name="arrow-right" size={11} />
+                  <span className="af">{a.after}</span>
+                </span>
+              )}
+            </span>
+          );
+        },
+      },
+      {
+        id: "entity",
+        header: "Entity",
+        accessorKey: "entityType",
+        enableSorting: false,
+        cell: (c) => {
+          const a = c.row.original;
+          return (
+            <span className="entity">
+              <Icon name={ENTITY_ICON[a.entityType] || "circle"} size={12} />
+              <span className="etype">{a.entityType}</span>
+              {a.entityId !== "—" && <code>{a.entityId}</code>}
+            </span>
+          );
+        },
+      },
+    ],
+    [],
+  );
+
   return (
     <>
       <Toolbar>
@@ -81,47 +140,14 @@ export function AuditLogView({ access }) {
         <span className="count">{rows.length} entries</span>
       </Toolbar>
 
-      <Card padding={0}>
-        <Table>
-          <div className="thead">
-            <span>When</span>
-            <span>Actor</span>
-            <span>Action</span>
-            <span>Entity</span>
-          </div>
-          <div className="tbody">
-            {rows.map((a) => (
-              <div className="trow" key={a.id}>
-                <span className="when">
-                  {new Date(a.timestamp).toLocaleString()}
-                </span>
-                <span className="actor">{a.actorName}</span>
-                <span className="action">
-                  {a.action}
-                  {a.before != null && a.after != null && (
-                    <span className="delta">
-                      <span className="b">{a.before}</span>
-                      <Icon name="arrow-right" size={11} />
-                      <span className="af">{a.after}</span>
-                    </span>
-                  )}
-                </span>
-                <span className="entity">
-                  <Icon
-                    name={ENTITY_ICON[a.entityType] || "circle"}
-                    size={12}
-                  />
-                  <span className="etype">{a.entityType}</span>
-                  {a.entityId !== "—" && <code>{a.entityId}</code>}
-                </span>
-              </div>
-            ))}
-            {rows.length === 0 && (
-              <div className="empty">No audit entries match these filters.</div>
-            )}
-          </div>
-        </Table>
-      </Card>
+      <CellStyles>
+        <DataTable
+          columns={columns}
+          data={rows}
+          pageSize={15}
+          emptyMessage="No audit entries match these filters."
+        />
+      </CellStyles>
     </>
   );
 }
@@ -151,30 +177,7 @@ const Toolbar = styled.div`
   }
 `;
 
-const Table = styled.div`
-  .thead,
-  .trow {
-    display: grid;
-    grid-template-columns: 1.4fr 1.2fr 2.4fr 1.6fr;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-  }
-  .thead {
-    background: var(--bg-muted, var(--surface-2));
-    border-bottom: 1px solid var(--border);
-    font-size: var(--text-xs);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--fg-subtle);
-  }
-  .trow {
-    border-bottom: 1px solid var(--separator);
-    font-size: var(--text-sm);
-  }
-  .trow:hover {
-    background: var(--surface-2);
-  }
+const CellStyles = styled.div`
   .when {
     font-family: var(--font-mono);
     font-size: var(--text-xs);
@@ -217,11 +220,5 @@ const Table = styled.div`
   .entity code {
     font-family: var(--font-mono);
     color: var(--accent);
-  }
-  .empty {
-    padding: 28px;
-    text-align: center;
-    color: var(--fg-subtle);
-    font-size: var(--text-sm);
   }
 `;

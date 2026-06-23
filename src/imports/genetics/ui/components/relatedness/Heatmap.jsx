@@ -9,9 +9,9 @@ const RMAX = 0.6;
 function colorFor(r) {
   const t = Math.min(1, r / RMAX);
   const lerp = (a, b) => Math.round(a + (b - a) * t);
-  const cr = lerp(241, 30);
-  const cg = lerp(245, 64);
-  const cb = lerp(249, 175);
+  const cr = lerp(245, 63);
+  const cg = lerp(247, 77);
+  const cb = lerp(251, 251);
   return `rgb(${cr},${cg},${cb})`;
 }
 
@@ -68,7 +68,11 @@ export function Heatmap({
         <svg
           viewBox={`0 0 ${W} ${H}`}
           preserveAspectRatio="xMidYMid meet"
-          style={{ width: "100%", height: "auto", display: "block" }}
+          style={{
+            width: "100%",
+            height: "auto",
+            display: "block",
+          }}
         >
           {showDendro &&
             dendro.map((l, i) => {
@@ -111,32 +115,38 @@ export function Heatmap({
                 </g>
               );
             })}
-          {matrix.map((row, i) =>
-            row.map((r, j) => {
-              const emph = r >= threshold;
-              const isSel = selected && (selected.i === i || selected.j === j);
-              const bandOut = !inBand(r);
-              return (
-                <rect
-                  key={`${i}-${j}`}
-                  x={j * cell}
-                  y={dendH + i * cell}
-                  width={cell - 0.5}
-                  height={cell - 0.5}
-                  fill={i === j ? "var(--fg-muted)" : colorFor(r)}
-                  opacity={i === j ? 1 : bandOut ? 0.06 : emph ? 1 : 0.32}
-                  stroke={isSel ? "var(--accent)" : "none"}
-                  strokeWidth={isSel ? 1 : 0}
-                  onMouseEnter={() =>
-                    setHover({ i, j, x: j * cell, y: dendH + i * cell })
-                  }
-                  onMouseLeave={() => setHover(null)}
-                  onClick={() => i !== j && onSelect({ i, j })}
-                  style={{ cursor: i === j ? "default" : "pointer" }}
-                />
-              );
-            }),
-          )}
+          <g
+            className="aiql-anim-fade"
+            style={{ animation: "aiql-fade 720ms ease-out" }}
+          >
+            {matrix.map((row, i) =>
+              row.map((r, j) => {
+                const emph = r >= threshold;
+                const isSel =
+                  selected && (selected.i === i || selected.j === j);
+                const bandOut = !inBand(r);
+                return (
+                  <rect
+                    key={`${i}-${j}`}
+                    x={j * cell}
+                    y={dendH + i * cell}
+                    width={cell - 0.5}
+                    height={cell - 0.5}
+                    fill={i === j ? "var(--fg-muted)" : colorFor(r)}
+                    opacity={i === j ? 1 : bandOut ? 0.06 : emph ? 1 : 0.32}
+                    stroke={isSel ? "var(--accent)" : "none"}
+                    strokeWidth={isSel ? 1 : 0}
+                    onMouseEnter={() =>
+                      setHover({ i, j, x: j * cell, y: dendH + i * cell })
+                    }
+                    onMouseLeave={() => setHover(null)}
+                    onClick={() => i !== j && onSelect({ i, j })}
+                    style={{ cursor: i === j ? "default" : "pointer" }}
+                  />
+                );
+              }),
+            )}
+          </g>
         </svg>
         {hover && hover.i !== hover.j && (
           <Tip
@@ -248,6 +258,6 @@ const Legend = styled.div`
     height: 8px;
     width: 120px;
     border-radius: var(--radius-pill);
-    background: linear-gradient(90deg, rgb(241, 245, 249), rgb(30, 64, 175));
+    background: linear-gradient(90deg, rgb(245, 247, 251), #3f4dfb);
   }
 `;

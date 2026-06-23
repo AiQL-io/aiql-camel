@@ -57,18 +57,18 @@ const Root = styled.div`
   .sw {
     width: 10px;
     height: 10px;
-    border-radius: 2px;
+    border-radius: 3px;
   }
   .sw.he {
-    background: var(--separator-2);
+    background: var(--fg-tertiary);
   }
   .sw.ho {
-    background: var(--accent);
+    background: var(--aiql-bar-gradient);
   }
   .rows {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
     max-height: 360px;
     overflow-y: auto;
   }
@@ -77,7 +77,7 @@ const Root = styled.div`
     grid-template-columns: 64px 1fr 76px;
     align-items: center;
     gap: 10px;
-    padding: 3px 6px;
+    padding: 4px 6px;
     border-radius: var(--radius-sm);
   }
   .row:hover {
@@ -94,24 +94,51 @@ const Root = styled.div`
   .bars {
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 4px;
   }
   .track {
-    height: 6px;
+    height: 7px;
     background: var(--surface-2);
     border-radius: var(--radius-pill);
     overflow: hidden;
   }
+
   .bar {
+    position: relative;
     display: block;
-    height: 100%;
+    height: 7px;
+    min-width: 2px;
     border-radius: var(--radius-pill);
+    overflow: hidden;
+    transform-origin: left center;
+    animation: aiql-grow-x 720ms cubic-bezier(0.2, 0.75, 0.25, 1);
   }
   .bar.he {
-    background: var(--separator-2);
+    background: var(--fg-tertiary);
   }
   .bar.ho {
-    background: var(--accent);
+    background: var(--aiql-bar-gradient);
+  }
+  .bar.ho::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      100deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.55) 50%,
+      transparent 100%
+    );
+    transform: translateX(-130%);
+    animation: aiql-bar-shine 1500ms ease-out 260ms;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bar {
+      animation: none;
+    }
+    .bar.ho::after {
+      display: none;
+    }
   }
   .val {
     font-family: var(--font-mono);

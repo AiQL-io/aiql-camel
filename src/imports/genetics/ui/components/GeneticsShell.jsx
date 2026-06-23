@@ -134,7 +134,6 @@ const Wrap = styled.div`
     display: flex;
     align-items: stretch;
     gap: 12px;
-    margin-top: 20px;
   }
   .bar > div:first-child {
     flex: 1;

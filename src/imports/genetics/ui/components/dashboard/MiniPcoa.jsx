@@ -26,21 +26,26 @@ export function MiniPcoa({
   return (
     <Root>
       <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="xMidYMid meet">
-        {points.map((p) => {
-          const isOut = showOutliers && p.outlier;
-          return (
-            <circle
-              key={p.id}
-              cx={sx(p.x)}
-              cy={sy(p.y)}
-              r={isOut ? 3.2 : 2.2}
-              fill={colors[p.declaredBreed] || "var(--fg-muted)"}
-              fillOpacity={isOut ? 1 : 0.7}
-              stroke={isOut ? "var(--fg)" : "none"}
-              strokeWidth={isOut ? 1 : 0}
-            />
-          );
-        })}
+        <g
+          className="aiql-anim-fade"
+          style={{ animation: "aiql-fade 700ms ease-out" }}
+        >
+          {points.map((p) => {
+            const isOut = showOutliers && p.outlier;
+            return (
+              <circle
+                key={p.id}
+                cx={sx(p.x)}
+                cy={sy(p.y)}
+                r={isOut ? 3.2 : 2.2}
+                fill={colors[p.declaredBreed] || "var(--fg-muted)"}
+                fillOpacity={isOut ? 1 : 0.7}
+                stroke={isOut ? "var(--fg)" : "none"}
+                strokeWidth={isOut ? 1 : 0}
+              />
+            );
+          })}
+        </g>
       </svg>
       <div className="legend">
         {breeds.map((b) => (

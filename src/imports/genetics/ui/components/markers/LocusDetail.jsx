@@ -22,9 +22,9 @@ export function LocusDetail({ detail }) {
   const spectrum =
     specMode === "observed" ? detail.obsSpectrum : detail.spectrum;
   const hwBars = [
-    { label: "Het obs", value: detail.obsHet, c: "var(--accent)" },
+    { label: "Het obs", value: detail.obsHet, c: "var(--aiql-bar-gradient)" },
     { label: "Het exp", value: detail.expHet, c: "var(--fg-muted)" },
-    { label: "Hom obs", value: detail.obsHom, c: "var(--accent)" },
+    { label: "Hom obs", value: detail.obsHom, c: "var(--aiql-bar-gradient)" },
     { label: "Hom exp", value: detail.expHom, c: "var(--fg-muted)" },
   ];
   const hwMax = Math.max(...hwBars.map((b) => b.value), 1);
@@ -283,6 +283,13 @@ const Hw = styled.div`
   .fill {
     display: block;
     height: 100%;
+    transform-origin: left center;
+    animation: aiql-grow-x 720ms cubic-bezier(0.2, 0.75, 0.25, 1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fill {
+      animation: none;
+    }
   }
   .row .v {
     font-family: var(--font-mono);

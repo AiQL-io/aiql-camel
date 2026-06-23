@@ -7,7 +7,7 @@ export function BarList({ data, color = "var(--accent)", renderHref }) {
   const max = Math.max(...data.map((d) => d.value), 1);
   return (
     <Root $color={color}>
-      {data.map((d) => {
+      {data.map((d, i) => {
         const Row = renderHref ? "a" : "div";
         return (
           <Row
@@ -33,13 +33,19 @@ export function BarList({ data, color = "var(--accent)", renderHref }) {
 const Root = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
 
   .row {
     display: grid;
     grid-template-columns: 120px 1fr 48px;
     align-items: center;
     gap: 12px;
+    padding: 4px 8px;
+    margin: 0 -8px;
+    border-radius: var(--radius-md);
+  }
+  a.row:hover {
+    background: var(--surface-2);
   }
   .label {
     font-size: var(--text-sm);
@@ -49,16 +55,44 @@ const Root = styled.div`
     text-overflow: ellipsis;
   }
   .track {
-    height: 8px;
-    background: var(--bg-muted);
+    height: 10px;
+    background: color-mix(in srgb, var(--accent) 10%, var(--bg-muted));
     border-radius: var(--radius-pill);
     overflow: hidden;
   }
+  /* Explicit pixel height so the bar never collapses to 0 (a percentage
+     height fails to resolve when the track sits inside a flex/grid item). */
   .bar {
+    position: relative;
     display: block;
-    height: 100%;
-    background: ${(p) => p.$color};
+    height: 10px;
+    min-width: 2px;
+    background: var(--aiql-bar-gradient);
     border-radius: var(--radius-pill);
+    overflow: hidden;
+    transform-origin: left center;
+    animation: aiql-grow-x 760ms cubic-bezier(0.2, 0.75, 0.25, 1);
+  }
+  .bar::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      100deg,
+      transparent 0%,
+      rgba(255, 255, 255, 0.5) 50%,
+      transparent 100%
+    );
+    transform: translateX(-130%);
+    animation: aiql-bar-shine 1500ms ease-out 220ms;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bar {
+      animation: none;
+    }
+    .bar::after {
+      display: none;
+    }
   }
   .value {
     font-family: var(--font-mono);

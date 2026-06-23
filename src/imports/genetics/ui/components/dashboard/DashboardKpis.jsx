@@ -59,7 +59,7 @@ export function DashboardKpis({ div, time }) {
         label="N analysed"
         value={div.nAnalyzed.toLocaleString()}
         delta={`${div.pctRegistry}% of registry`}
-        spark={s("nCumulative")}
+        spark={s("n")}
       />
     </KpiBand>
   );

@@ -4,6 +4,7 @@ import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import styled from "styled-components";
 import { Icon } from "@/imports/core/components/Icon.jsx";
+import { DataTable } from "@/imports/core/components/DataTable.jsx";
 
 export function PerLocusCompare({ drivers, nameA, nameB }) {
   const [metric, setMetric] = useState("ho");
@@ -23,9 +24,69 @@ export function PerLocusCompare({ drivers, nameA, nameB }) {
       .slice(0, 12);
   }, [drivers, metric]);
 
-  if (!drivers.length) return null;
-  const max = Math.max(...rows.map((d) => d.delta), 1e-9);
+  const max = useMemo(
+    () => Math.max(...rows.map((d) => d.delta), 1e-9),
+    [rows],
+  );
   const mlabel = metric === "ho" ? "Ho" : "He";
+
+  const columns = useMemo(
+    () => [
+      {
+        id: "locus",
+        header: "Locus",
+        accessorKey: "locus",
+        cell: (c) => (
+          <Link
+            className="loc"
+            href={`/genetics/markers?locus=${c.getValue()}`}
+          >
+            {c.getValue()} <Icon name="arrow-up-right" size={11} />
+          </Link>
+        ),
+      },
+      {
+        id: "a",
+        header: `${nameA} ${mlabel}`,
+        accessorFn: (d) => d.a,
+        meta: { align: "end" },
+        cell: (c) => (
+          <span className="mono">{c.row.original.a.toFixed(3)}</span>
+        ),
+      },
+      {
+        id: "b",
+        header: `${nameB} ${mlabel}`,
+        accessorFn: (d) => d.b,
+        meta: { align: "end" },
+        cell: (c) => (
+          <span className="mono">{c.row.original.b.toFixed(3)}</span>
+        ),
+      },
+      {
+        id: "delta",
+        header: "|Δ| (driver)",
+        accessorFn: (d) => d.delta,
+        cell: (c) => {
+          const d = c.row.original;
+          return (
+            <span className="delta">
+              <span className="track">
+                <span
+                  className="fill"
+                  style={{ width: `${(d.delta / max) * 100}%` }}
+                />
+              </span>
+              <b>{d.delta.toFixed(3)}</b>
+            </span>
+          );
+        },
+      },
+    ],
+    [nameA, nameB, mlabel, max],
+  );
+
+  if (!drivers.length) return null;
 
   return (
     <Root>
@@ -48,38 +109,9 @@ export function PerLocusCompare({ drivers, nameA, nameB }) {
           </button>
         </div>
       </div>
-      <div className="thead">
-        <span>Locus</span>
-        <span>
-          {nameA} {mlabel}
-        </span>
-        <span>
-          {nameB} {mlabel}
-        </span>
-        <span>|Δ| (driver)</span>
-      </div>
-      {rows.map((d) => (
-        <Link
-          className="trow"
-          key={d.locus}
-          href={`/genetics/markers?locus=${d.locus}`}
-        >
-          <span className="loc">
-            {d.locus} <Icon name="arrow-up-right" size={11} />
-          </span>
-          <span className="mono">{d.a.toFixed(3)}</span>
-          <span className="mono">{d.b.toFixed(3)}</span>
-          <span className="delta">
-            <span className="track">
-              <span
-                className="fill"
-                style={{ width: `${(d.delta / max) * 100}%` }}
-              />
-            </span>
-            <b>{d.delta.toFixed(3)}</b>
-          </span>
-        </Link>
-      ))}
+      <CellStyles>
+        <DataTable columns={columns} data={rows} emptyMessage="No drivers." />
+      </CellStyles>
       <p className="hint">
         Loci with the largest {mlabel} gap drive differentiation. Click a locus
         to inspect its allele frequencies in Marker Panel Analytics.
@@ -117,28 +149,14 @@ const Root = styled.div`
     background: var(--accent-soft);
     color: var(--accent);
   }
-  .thead,
-  .trow {
-    display: grid;
-    grid-template-columns: 1.4fr 1fr 1fr 1.6fr;
-    align-items: center;
-    gap: 10px;
-    padding: 7px 10px;
-  }
-  .thead {
+  .hint {
+    margin-top: 10px;
     font-size: var(--text-xs);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
     color: var(--fg-subtle);
-    border-bottom: 1px solid var(--border);
   }
-  .trow {
-    border-bottom: 1px solid var(--separator);
-    font-size: var(--text-sm);
-  }
-  .trow:hover {
-    background: var(--surface-2);
-  }
+`;
+
+const CellStyles = styled.div`
   .loc {
     display: inline-flex;
     align-items: center;
@@ -167,15 +185,17 @@ const Root = styled.div`
   .delta .fill {
     display: block;
     height: 100%;
-    background: var(--danger);
+    background: var(--aiql-bar-gradient);
+    transform-origin: left center;
+    animation: aiql-grow-x 720ms cubic-bezier(0.2, 0.75, 0.25, 1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .delta .fill {
+      animation: none;
+    }
   }
   .delta b {
     font-family: var(--font-mono);
     font-size: var(--text-xs);
-  }
-  .hint {
-    margin-top: 10px;
-    font-size: var(--text-xs);
-    color: var(--fg-subtle);
   }
 `;

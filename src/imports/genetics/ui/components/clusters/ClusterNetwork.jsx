@@ -5,7 +5,7 @@ import styled from "styled-components";
 import { Icon } from "@/imports/core/components/Icon.jsx";
 
 export function clusterColor(id) {
-  return `hsl(${(id * 47) % 360}, 62%, 55%)`;
+  return `hsl(${(234 + id * 47) % 360}, 88%, 62%)`;
 }
 
 const W = 560;
@@ -139,41 +139,51 @@ export function ClusterNetwork({
         onPointerMove={onMove}
         onPointerUp={onUp}
       >
-        {edges.map((e, i) => (
-          <line
-            key={i}
-            x1={tsx(nodes[e.a].x)}
-            y1={tsy(nodes[e.a].y)}
-            x2={tsx(nodes[e.b].x)}
-            y2={tsy(nodes[e.b].y)}
-            stroke="var(--fg-muted)"
-            strokeWidth={(0.4 + e.r) * Math.min(2, view.k)}
-            opacity={dim(e.cluster) ? 0.05 : 0.25}
-            style={{ cursor: "pointer" }}
-            onClick={() =>
-              !(pan && pan.moved) &&
-              onEdge &&
-              onEdge(nodes[e.a].id, nodes[e.b].id)
-            }
-          />
-        ))}
-        {nodes.map((n, i) => (
-          <circle
-            key={n.id}
-            cx={tsx(n.x)}
-            cy={tsy(n.y)}
-            r={(3 + n.f * 7) * Math.min(1.8, Math.sqrt(view.k))}
-            fill={clusterColor(n.cluster)}
-            opacity={dim(n.cluster) ? 0.12 : 0.92}
-            stroke={hover === i ? "var(--fg)" : "none"}
-            strokeWidth={hover === i ? 1.4 : 0}
-            onMouseEnter={() => setHover(i)}
-            onMouseLeave={() => setHover(null)}
-            onClick={() => !(pan && pan.moved) && onSelectCluster(n.cluster)}
-            onDoubleClick={() => onNode(n.id)}
-            style={{ cursor: "pointer" }}
-          />
-        ))}
+        <g
+          className="aiql-anim-fade"
+          style={{ animation: "aiql-fade 600ms ease-out" }}
+        >
+          {edges.map((e, i) => (
+            <line
+              key={i}
+              x1={tsx(nodes[e.a].x)}
+              y1={tsy(nodes[e.a].y)}
+              x2={tsx(nodes[e.b].x)}
+              y2={tsy(nodes[e.b].y)}
+              stroke="var(--fg-muted)"
+              strokeWidth={(0.4 + e.r) * Math.min(2, view.k)}
+              opacity={dim(e.cluster) ? 0.05 : 0.25}
+              style={{ cursor: "pointer" }}
+              onClick={() =>
+                !(pan && pan.moved) &&
+                onEdge &&
+                onEdge(nodes[e.a].id, nodes[e.b].id)
+              }
+            />
+          ))}
+        </g>
+        <g
+          className="aiql-anim-fade"
+          style={{ animation: "aiql-fade 600ms ease-out 180ms both" }}
+        >
+          {nodes.map((n, i) => (
+            <circle
+              key={n.id}
+              cx={tsx(n.x)}
+              cy={tsy(n.y)}
+              r={(3 + n.f * 7) * Math.min(1.8, Math.sqrt(view.k))}
+              fill={clusterColor(n.cluster)}
+              opacity={dim(n.cluster) ? 0.12 : 0.92}
+              stroke={hover === i ? "var(--fg)" : "none"}
+              strokeWidth={hover === i ? 1.4 : 0}
+              onMouseEnter={() => setHover(i)}
+              onMouseLeave={() => setHover(null)}
+              onClick={() => !(pan && pan.moved) && onSelectCluster(n.cluster)}
+              onDoubleClick={() => onNode(n.id)}
+              style={{ cursor: "pointer" }}
+            />
+          ))}
+        </g>
       </svg>
       {hover != null && (
         <Tip

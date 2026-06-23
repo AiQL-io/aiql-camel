@@ -95,6 +95,14 @@ function GroupedBars({ metrics, maxBy }) {
                     height={barH}
                     rx={2}
                     fill={cohortColor(i)}
+                    className="aiql-anim-grow"
+                    style={{
+                      transformBox: "fill-box",
+                      transformOrigin: "left",
+                      animation: `aiql-grow-x 640ms cubic-bezier(0.2, 0.75, 0.25, 1) ${
+                        i * 70
+                      }ms both`,
+                    }}
                   >
                     <title>{`${c.name} · ${metric.label}: ${v} ± ${ci}`}</title>
                   </rect>
@@ -167,7 +175,13 @@ function Parallel({ metrics, maxBy }) {
         {metrics.map((c, ci) => {
           const pts = axes.map((a, i) => [xOf(i), yOf(a.key, c[a.key])]);
           return (
-            <g key={c.id}>
+            <g
+              key={c.id}
+              className="aiql-anim-fade"
+              style={{
+                animation: `aiql-fade 600ms ease-out ${ci * 90}ms both`,
+              }}
+            >
               {axes.map((a, i) => {
                 const ci2 = c.ci[a.key] || 0;
                 const yLo = yOf(a.key, c[a.key] + ci2);

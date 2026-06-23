@@ -1,99 +1,149 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import Link from "next/link";
 import styled from "styled-components";
 import { Card } from "@/imports/core/components/Card.jsx";
 import { Chip } from "@/imports/core/components/Chip.jsx";
+import { DataTable } from "@/imports/core/components/DataTable.jsx";
 import { TYPE_LABEL } from "@/imports/integrity/state/alertStore.js";
 import { SEV_TONE, STATUS_TONE } from "./alertConstants.js";
 
 export function AlertQueueTable({ rows, access, selected, toggle, toggleAll }) {
-  return (
-    <TableCard padding={0}>
-      <Table>
-        <div className="thead">
-          <span className="ck">
+  const allChecked = selected.size === rows.length && rows.length > 0;
+
+  const columns = useMemo(
+    () => [
+      {
+        id: "select",
+        enableSorting: false,
+        header: () => (
+          <span className="ck" onClick={(e) => e.stopPropagation()}>
+            <input type="checkbox" checked={allChecked} onChange={toggleAll} />
+          </span>
+        ),
+        cell: (c) => (
+          <span className="ck" onClick={(e) => e.stopPropagation()}>
             <input
               type="checkbox"
-              checked={selected.size === rows.length && rows.length > 0}
-              onChange={toggleAll}
+              checked={selected.has(c.row.original.id)}
+              onChange={() => toggle(c.row.original.id)}
             />
           </span>
-          <span>Severity</span>
-          <span>Type</span>
-          <span>Subject</span>
-          <span>Related</span>
-          <span>Evidence</span>
-          <span>Detected</span>
-          <span>Status</span>
-          <span>Assignee</span>
-        </div>
-        <div className="tbody">
-          {rows.slice(0, 300).map((a) => {
-            const subj = a.subjectId ? access.getAnimal(a.subjectId) : null;
-            const related = (a.relatedIds || [])
-              .map((id) => access.getAnimal(id))
-              .filter(Boolean);
-            return (
-              <div className="trow" key={a.id}>
-                <span className="ck" onClick={(e) => e.stopPropagation()}>
-                  <input
-                    type="checkbox"
-                    checked={selected.has(a.id)}
-                    onChange={() => toggle(a.id)}
-                  />
-                </span>
-                <span>
-                  <CapChip size="sm" tone={SEV_TONE[a.severity]}>
-                    {a.severity}
-                  </CapChip>
-                </span>
-                <Link href={`/integrity/${a.id}`} className="type">
-                  {TYPE_LABEL[a.type]}
-                </Link>
-                <span className="subj">
-                  {subj ? (
-                    <Link href={`/registry/${subj.id}`}>
-                      {subj.registrationId}
-                    </Link>
-                  ) : (
-                    <span className="mono">{a.locus || "—"}</span>
-                  )}
-                </span>
-                <span className="rel">
-                  {related.length === 0 ? (
-                    <span className="mono">—</span>
-                  ) : (
-                    related.slice(0, 2).map((r, i) => (
-                      <React.Fragment key={r.id}>
-                        {i > 0 && <span className="sep">, </span>}
-                        <Link href={`/registry/${r.id}`}>
-                          {r.registrationId}
-                        </Link>
-                      </React.Fragment>
-                    ))
-                  )}
-                  {related.length > 2 && (
-                    <span className="more"> +{related.length - 2}</span>
-                  )}
-                </span>
-                <span className="ev">{a.evidence.rule}</span>
-                <span className="mono">{a.detectedAt?.slice(0, 10)}</span>
-                <span>
-                  <CapChip size="sm" tone={STATUS_TONE[a.status]}>
-                    {a.status.replace("_", " ")}
-                  </CapChip>
-                </span>
-                <span className="mono">{a.assignee || "—"}</span>
-              </div>
-            );
-          })}
-          {rows.length === 0 && (
-            <div className="empty">No alerts match these filters.</div>
-          )}
-        </div>
-      </Table>
+        ),
+      },
+      {
+        id: "severity",
+        header: "Severity",
+        accessorKey: "severity",
+        cell: (c) => (
+          <CapChip size="sm" tone={SEV_TONE[c.getValue()]}>
+            {c.getValue()}
+          </CapChip>
+        ),
+      },
+      {
+        id: "type",
+        header: "Type",
+        accessorFn: (a) => TYPE_LABEL[a.type],
+        cell: (c) => (
+          <Link href={`/integrity/${c.row.original.id}`} className="type">
+            {c.getValue()}
+          </Link>
+        ),
+      },
+      {
+        id: "subject",
+        header: "Subject",
+        accessorFn: (a) => {
+          const subj = a.subjectId ? access.getAnimal(a.subjectId) : null;
+          return subj ? subj.registrationId : a.locus || "—";
+        },
+        cell: (c) => {
+          const a = c.row.original;
+          const subj = a.subjectId ? access.getAnimal(a.subjectId) : null;
+          return (
+            <span className="subj">
+              {subj ? (
+                <Link href={`/registry/${subj.id}`}>{subj.registrationId}</Link>
+              ) : (
+                <span className="mono">{a.locus || "—"}</span>
+              )}
+            </span>
+          );
+        },
+      },
+      {
+        id: "related",
+        header: "Related",
+        enableSorting: false,
+        cell: (c) => {
+          const a = c.row.original;
+          const related = (a.relatedIds || [])
+            .map((id) => access.getAnimal(id))
+            .filter(Boolean);
+          return (
+            <span className="rel">
+              {related.length === 0 ? (
+                <span className="mono">—</span>
+              ) : (
+                related.slice(0, 2).map((r, i) => (
+                  <React.Fragment key={r.id}>
+                    {i > 0 && <span className="sep">, </span>}
+                    <Link href={`/registry/${r.id}`}>{r.registrationId}</Link>
+                  </React.Fragment>
+                ))
+              )}
+              {related.length > 2 && (
+                <span className="more"> +{related.length - 2}</span>
+              )}
+            </span>
+          );
+        },
+      },
+      {
+        id: "evidence",
+        header: "Evidence",
+        accessorFn: (a) => a.evidence.rule,
+        cell: (c) => <span className="ev">{c.getValue()}</span>,
+      },
+      {
+        id: "detected",
+        header: "Detected",
+        accessorKey: "detectedAt",
+        cell: (c) => <span className="mono">{c.getValue()?.slice(0, 10)}</span>,
+      },
+      {
+        id: "status",
+        header: "Status",
+        accessorKey: "status",
+        cell: (c) => (
+          <CapChip size="sm" tone={STATUS_TONE[c.getValue()]}>
+            {c.getValue().replace("_", " ")}
+          </CapChip>
+        ),
+      },
+      {
+        id: "assignee",
+        header: "Assignee",
+        accessorFn: (a) => a.assignee || "—",
+        cell: (c) => <span className="mono">{c.getValue()}</span>,
+      },
+    ],
+    [access, selected, toggle, toggleAll, allChecked],
+  );
+
+  return (
+    <TableCard padding={0}>
+      <CellStyles>
+        <DataTable
+          columns={columns}
+          data={rows}
+          pageSize={20}
+          maxHeight={560}
+          emptyMessage="No alerts match these filters."
+        />
+      </CellStyles>
     </TableCard>
   );
 }
@@ -106,35 +156,7 @@ const CapChip = styled(Chip)`
   text-transform: capitalize;
 `;
 
-const Table = styled.div`
-  .thead,
-  .trow {
-    display: grid;
-    grid-template-columns: 34px 90px 150px 110px 110px 1.6fr 96px 100px 120px;
-    gap: 10px;
-    align-items: center;
-    padding: 10px 16px;
-  }
-  .thead {
-    background: var(--bg-muted);
-    border-bottom: 1px solid var(--border);
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--fg-subtle);
-  }
-  .tbody {
-    max-height: 560px;
-    overflow-y: auto;
-  }
-  .trow {
-    border-bottom: 1px solid var(--separator);
-    font-size: var(--text-sm);
-  }
-  .trow:hover {
-    background: var(--surface-2);
-  }
+const CellStyles = styled.div`
   .ck {
     display: flex;
     align-items: center;
@@ -173,11 +195,5 @@ const Table = styled.div`
     font-family: var(--font-mono);
     font-size: var(--text-xs);
     color: var(--fg-subtle);
-  }
-  .empty {
-    padding: 24px 16px;
-    text-align: center;
-    color: var(--fg-subtle);
-    font-size: var(--text-sm);
   }
 `;

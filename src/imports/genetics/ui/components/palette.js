@@ -1,12 +1,12 @@
 const COLORS = [
-  "#3b82f6",
-  "#ef4444",
-  "#10b981",
-  "#f59e0b",
-  "#8b5cf6",
-  "#ec4899",
-  "#14b8a6",
-  "#f97316",
+  "#3F4DFB",
+  "#18BBFD",
+  "#8743FD",
+  "#03D6D0",
+  "#FFBF00",
+  "#3FB27F",
+  "#03183F",
+  "#6C7BFF",
 ];
 
 export function breedColors(breeds) {

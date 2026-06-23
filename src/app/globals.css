@@ -13,6 +13,18 @@
   --aiql-gradient-soft: linear-gradient(135deg, #18bbfd2e, #8743fd2e);
   --aiql-gradient-dark: linear-gradient(135deg, #03183f 0%, #0411b2 100%);
   --aiql-gradient-light: linear-gradient(315deg, #0b38b20a 34%, #2e7efc1f 100%);
+  --aiql-bar-gradient: linear-gradient(
+    90deg,
+    #18bbfd 0%,
+    #2e7efc 45%,
+    #8743fd 100%
+  );
+  --aiql-bar-gradient-v: linear-gradient(
+    to top,
+    #18bbfd 0%,
+    #2e7efc 55%,
+    #8743fd 100%
+  );
 
   --bg-canvas: #f5f7fb;
   --bg-surface: #fcfcfc;
@@ -262,4 +274,76 @@ button {
 }
 .aiql-fade-in {
   animation: aiql-fade-in 220ms ease-out;
+}
+
+@keyframes aiql-grow-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+@keyframes aiql-grow-y {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+@keyframes aiql-bar-shine {
+  0% {
+    transform: translateX(-130%);
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  70%,
+  100% {
+    transform: translateX(340%);
+    opacity: 0;
+  }
+}
+@keyframes aiql-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes aiql-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes aiql-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+@keyframes aiql-ring-draw {
+  from {
+    stroke-dashoffset: var(--ring-dash, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aiql-fade-in {
+    animation: none;
+  }
+  [class*="aiql-anim"] {
+    animation: none !important;
+  }
 }

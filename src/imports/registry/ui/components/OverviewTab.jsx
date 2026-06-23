@@ -76,7 +76,12 @@ const Bar = styled.span`
   display: block;
   height: 100%;
   width: ${(p) => p.$pct}%;
-  background: var(--accent);
+  background: var(--aiql-bar-gradient);
+  transform-origin: left center;
+  animation: aiql-grow-x 720ms cubic-bezier(0.2, 0.75, 0.25, 1);
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
 `;
 
 const OverviewGrid = styled.div`

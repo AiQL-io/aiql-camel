@@ -3,11 +3,11 @@
 import React, { useState, useMemo } from "react";
 import Link from "next/link";
 import styled from "styled-components";
-import { Card } from "@/imports/core/components/Card.jsx";
 import { Button } from "@/imports/core/components/Button.jsx";
 import { Icon } from "@/imports/core/components/Icon.jsx";
 import { Overline } from "@/imports/core/components/Overline.jsx";
 import { Select } from "@/imports/core/components/Select.jsx";
+import { DataTable } from "@/imports/core/components/DataTable.jsx";
 import { useRole } from "@/imports/core/providers/RoleProvider.jsx";
 import { REPORT_TYPES } from "@/imports/reports/engine/reports.js";
 import {
@@ -62,6 +62,80 @@ export function ReportHistoryView({ access }) {
   }, [reports, q, type, status]);
 
   const issuedCount = reports.filter((r) => r.status === "issued").length;
+
+  const columns = useMemo(
+    () => [
+      {
+        id: "type",
+        header: "Type",
+        accessorFn: (r) => typeLabel(r.type),
+        cell: (c) => <span className="muted">{c.getValue()}</span>,
+      },
+      {
+        id: "subject",
+        header: "Subject",
+        accessorKey: "subjectLabel",
+        cell: (c) => <span className="mono">{c.getValue()}</span>,
+      },
+      { id: "issuer", header: "Issuer", accessorKey: "generatedBy" },
+      {
+        id: "date",
+        header: "Date",
+        accessorKey: "generatedAt",
+        cell: (c) => (
+          <span className="mono">
+            {new Date(c.getValue()).toLocaleDateString()}
+          </span>
+        ),
+      },
+      {
+        id: "code",
+        header: "Code",
+        accessorKey: "verificationCode",
+        cell: (c) => (
+          <Link className="code" href={`/reports/verify/${c.getValue()}`}>
+            {c.getValue()}
+          </Link>
+        ),
+      },
+      {
+        id: "status",
+        header: "Status",
+        accessorKey: "status",
+        cell: (c) => (
+          <span className={`status ${c.getValue()}`}>{c.getValue()}</span>
+        ),
+      },
+      {
+        id: "actions",
+        header: "Actions",
+        enableSorting: false,
+        meta: { align: "end" },
+        cell: (c) => {
+          const r = c.row.original;
+          if (!canIssue) return <span className="muted">—</span>;
+          return r.status === "issued" ? (
+            <button
+              type="button"
+              className="revoke"
+              onClick={() => revokeReport(r.id)}
+            >
+              Revoke
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="reissue"
+              onClick={() => reissueReport(r.id)}
+            >
+              Reissue
+            </button>
+          );
+        },
+      },
+    ],
+    [canIssue],
+  );
 
   return (
     <>
@@ -145,65 +219,57 @@ export function ReportHistoryView({ access }) {
         </BatchPanel>
       )}
 
-      <Card padding={0}>
-        <Table>
-          <div className="thead">
-            <span>Type</span>
-            <span>Subject</span>
-            <span>Issuer</span>
-            <span>Date</span>
-            <span>Code</span>
-            <span>Status</span>
-            <span className="ar">Actions</span>
-          </div>
-          <div className="tbody">
-            {rows.map((r) => (
-              <div className="trow" key={r.id}>
-                <span className="t">{typeLabel(r.type)}</span>
-                <span className="subj">{r.subjectLabel}</span>
-                <span className="t">{r.generatedBy}</span>
-                <span className="mono">
-                  {new Date(r.generatedAt).toLocaleDateString()}
-                </span>
-                <Link
-                  className="code"
-                  href={`/reports/verify/${r.verificationCode}`}
-                >
-                  {r.verificationCode}
-                </Link>
-                <span className={`status ${r.status}`}>{r.status}</span>
-                <span className="acts">
-                  {!canIssue ? (
-                    <span className="muted">—</span>
-                  ) : r.status === "issued" ? (
-                    <button
-                      type="button"
-                      className="revoke"
-                      onClick={() => revokeReport(r.id)}
-                    >
-                      Revoke
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      className="reissue"
-                      onClick={() => reissueReport(r.id)}
-                    >
-                      Reissue
-                    </button>
-                  )}
-                </span>
-              </div>
-            ))}
-            {rows.length === 0 && (
-              <div className="empty">No documents match these filters.</div>
-            )}
-          </div>
-        </Table>
-      </Card>
+      <CellStyles>
+        <DataTable
+          columns={columns}
+          data={rows}
+          pageSize={12}
+          emptyMessage="No documents match these filters."
+        />
+      </CellStyles>
     </>
   );
 }
+
+const CellStyles = styled.div`
+  .mono,
+  .code {
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+  }
+  .muted {
+    color: var(--fg-secondary);
+    font-size: var(--text-xs);
+  }
+  .code {
+    color: var(--accent);
+  }
+  .status {
+    font-size: var(--text-xs);
+    text-transform: capitalize;
+  }
+  .status.issued {
+    color: var(--status-success);
+  }
+  .status.revoked {
+    color: var(--danger);
+  }
+  .revoke,
+  .reissue {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: var(--radius-pill);
+    padding: 3px 10px;
+    font-size: var(--text-xs);
+    cursor: pointer;
+  }
+  .revoke {
+    color: var(--danger);
+  }
+  .reissue {
+    color: var(--accent);
+  }
+`;
 
 const Toolbar = styled.div`
   display: flex;
@@ -280,88 +346,5 @@ const BatchPanel = styled.div`
   }
   .bres b {
     color: var(--status-success);
-  }
-`;
-
-const Table = styled.div`
-  .thead,
-  .trow {
-    display: grid;
-    grid-template-columns: 1.4fr 1.4fr 1fr 0.9fr 1.2fr 0.8fr 0.9fr;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-  }
-  .thead {
-    background: var(--bg-muted, var(--surface-2));
-    border-bottom: 1px solid var(--border);
-    font-size: var(--text-xs);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--fg-subtle);
-  }
-  .thead .ar {
-    text-align: end;
-  }
-  .trow {
-    border-bottom: 1px solid var(--separator);
-    font-size: var(--text-sm);
-  }
-  .trow:hover {
-    background: var(--surface-2);
-  }
-  .t {
-    color: var(--fg-secondary);
-    font-size: var(--text-xs);
-  }
-  .subj {
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-  }
-  .mono {
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    color: var(--fg-subtle);
-  }
-  .code {
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    color: var(--accent);
-  }
-  .status {
-    font-size: var(--text-xs);
-    text-transform: capitalize;
-  }
-  .status.issued {
-    color: var(--status-success);
-  }
-  .status.revoked {
-    color: var(--danger);
-  }
-  .acts {
-    text-align: end;
-  }
-  .acts button {
-    border: 1px solid var(--border);
-    background: var(--surface);
-    border-radius: var(--radius-pill);
-    padding: 3px 10px;
-    font-size: var(--text-xs);
-    cursor: pointer;
-  }
-  .acts .revoke {
-    color: var(--danger);
-  }
-  .acts .reissue {
-    color: var(--accent);
-  }
-  .acts .muted {
-    color: var(--fg-subtle);
-  }
-  .empty {
-    padding: 28px;
-    text-align: center;
-    color: var(--fg-subtle);
-    font-size: var(--text-sm);
   }
 `;

@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import styled from "styled-components";
 import { Card } from "@/imports/core/components/Card.jsx";
 import { Button } from "@/imports/core/components/Button.jsx";
 import { Select } from "@/imports/core/components/Select.jsx";
 import { Icon } from "@/imports/core/components/Icon.jsx";
 import { Overline } from "@/imports/core/components/Overline.jsx";
+import { DataTable } from "@/imports/core/components/DataTable.jsx";
 import { useRole } from "@/imports/core/providers/RoleProvider.jsx";
 import {
   useAdmin,
@@ -36,6 +37,124 @@ export function UsersRolesView({ access }) {
     setNewName("");
     setAdding(false);
   };
+
+  const columns = useMemo(
+    () => [
+      {
+        id: "user",
+        header: "User",
+        accessorKey: "name",
+        cell: (c) => {
+          const u = c.row.original;
+          return (
+            <span className="user">
+              <b>{u.name}</b>
+              <em>{u.email}</em>
+            </span>
+          );
+        },
+      },
+      {
+        id: "org",
+        header: "Organization",
+        accessorKey: "org",
+        cell: (c) => <span className="t">{c.getValue()}</span>,
+      },
+      {
+        id: "role",
+        header: "Role",
+        accessorKey: "roleId",
+        enableSorting: false,
+        cell: (c) => {
+          const u = c.row.original;
+          const perms = permissionsFor(u.roleId);
+          return (
+            <span className="role">
+              {isAdmin ? (
+                <Select
+                  size="sm"
+                  value={u.roleId}
+                  onChange={(v) => setUserRole(u.id, v)}
+                  options={ROLE_OPTIONS}
+                />
+              ) : (
+                ROLE_DEFS.find((r) => r.id === u.roleId)?.label
+              )}
+              <em className="perms" title={perms.join("\n")}>
+                {perms.length} full-access{" "}
+                {perms.length === 1 ? "capability" : "capabilities"}
+              </em>
+            </span>
+          );
+        },
+      },
+      {
+        id: "status",
+        header: "Status",
+        accessorKey: "status",
+        cell: (c) => (
+          <span className={`status ${c.getValue()}`}>{c.getValue()}</span>
+        ),
+      },
+      {
+        id: "lastActive",
+        header: "Last active",
+        accessorKey: "lastActive",
+        cell: (c) => (
+          <span className="mono">
+            {c.getValue() ? new Date(c.getValue()).toLocaleDateString() : "—"}
+          </span>
+        ),
+      },
+      {
+        id: "actions",
+        header: "Actions",
+        enableSorting: false,
+        meta: { align: "end" },
+        cell: (c) => {
+          const u = c.row.original;
+          const isActive = u.roleId === activeRoleId && u.seed;
+          return (
+            <span className="acts">
+              {isActive ? (
+                <span className="cur">
+                  <Icon name="check-circle" size={13} /> Active persona
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  className="use"
+                  onClick={() => setRole(u.roleId)}
+                  title="Switch the demo to this persona"
+                >
+                  Use persona
+                </button>
+              )}
+              {isAdmin && u.status === "active" && !u.seed && (
+                <button
+                  type="button"
+                  className="susp"
+                  onClick={() => setUserStatus(u.id, "suspended")}
+                >
+                  Suspend
+                </button>
+              )}
+              {isAdmin && u.status === "suspended" && (
+                <button
+                  type="button"
+                  className="use"
+                  onClick={() => setUserStatus(u.id, "active")}
+                >
+                  Reactivate
+                </button>
+              )}
+            </span>
+          );
+        },
+      },
+    ],
+    [isAdmin, activeRoleId, setRole],
+  );
 
   return (
     <>
@@ -73,93 +192,9 @@ export function UsersRolesView({ access }) {
           </AddRow>
         )}
 
-        <Card padding={0}>
-          <Table>
-            <div className="thead">
-              <span>User</span>
-              <span>Organization</span>
-              <span>Role</span>
-              <span>Status</span>
-              <span>Last active</span>
-              <span className="ar">Actions</span>
-            </div>
-            <div className="tbody">
-              {users.map((u) => {
-                const isActive = u.roleId === activeRoleId && u.seed;
-                return (
-                  <div className="trow" key={u.id}>
-                    <span className="user">
-                      <b>{u.name}</b>
-                      <em>{u.email}</em>
-                    </span>
-                    <span className="t">{u.org}</span>
-                    <span className="role">
-                      {isAdmin ? (
-                        <Select
-                          size="sm"
-                          value={u.roleId}
-                          onChange={(v) => setUserRole(u.id, v)}
-                          options={ROLE_OPTIONS}
-                        />
-                      ) : (
-                        ROLE_DEFS.find((r) => r.id === u.roleId)?.label
-                      )}
-                      {(() => {
-                        const perms = permissionsFor(u.roleId);
-                        return (
-                          <em className="perms" title={perms.join("\n")}>
-                            {perms.length} full-access{" "}
-                            {perms.length === 1 ? "capability" : "capabilities"}
-                          </em>
-                        );
-                      })()}
-                    </span>
-                    <span className={`status ${u.status}`}>{u.status}</span>
-                    <span className="mono">
-                      {u.lastActive
-                        ? new Date(u.lastActive).toLocaleDateString()
-                        : "—"}
-                    </span>
-                    <span className="acts">
-                      {isActive ? (
-                        <span className="cur">
-                          <Icon name="check-circle" size={13} /> Active persona
-                        </span>
-                      ) : (
-                        <button
-                          type="button"
-                          className="use"
-                          onClick={() => setRole(u.roleId)}
-                          title="Switch the demo to this persona"
-                        >
-                          Use persona
-                        </button>
-                      )}
-                      {isAdmin && u.status === "active" && !u.seed && (
-                        <button
-                          type="button"
-                          className="susp"
-                          onClick={() => setUserStatus(u.id, "suspended")}
-                        >
-                          Suspend
-                        </button>
-                      )}
-                      {isAdmin && u.status === "suspended" && (
-                        <button
-                          type="button"
-                          className="use"
-                          onClick={() => setUserStatus(u.id, "active")}
-                        >
-                          Reactivate
-                        </button>
-                      )}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </Table>
-        </Card>
+        <CellStyles>
+          <DataTable columns={columns} data={users} emptyMessage="No users." />
+        </CellStyles>
       </Section>
 
       <Card style={{ marginTop: 16 }}>
@@ -231,33 +266,7 @@ const AddRow = styled.div`
   }
 `;
 
-const Table = styled.div`
-  .thead,
-  .trow {
-    display: grid;
-    grid-template-columns: 1.6fr 1.2fr 1.3fr 0.9fr 1fr 1.4fr;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-  }
-  .thead {
-    background: var(--bg-muted, var(--surface-2));
-    border-bottom: 1px solid var(--border);
-    font-size: var(--text-xs);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--fg-subtle);
-  }
-  .thead .ar {
-    text-align: end;
-  }
-  .trow {
-    border-bottom: 1px solid var(--separator);
-    font-size: var(--text-sm);
-  }
-  .trow:hover {
-    background: var(--surface-2);
-  }
+const CellStyles = styled.div`
   .user {
     display: flex;
     flex-direction: column;

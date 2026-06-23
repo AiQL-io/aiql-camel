@@ -1,12 +1,13 @@
 "use client";
 
-import React from "react";
+import React, { useMemo } from "react";
 import Link from "next/link";
 import styled from "styled-components";
 import { Card } from "@/imports/core/components/Card.jsx";
 import { Button } from "@/imports/core/components/Button.jsx";
 import { Icon } from "@/imports/core/components/Icon.jsx";
 import { Overline } from "@/imports/core/components/Overline.jsx";
+import { DataTable } from "@/imports/core/components/DataTable.jsx";
 import { useRole } from "@/imports/core/providers/RoleProvider.jsx";
 import { useAdmin, validatePanel } from "@/imports/admin/state/adminStore.js";
 
@@ -24,6 +25,75 @@ export function MarkerPanelView({ access }) {
     : "—";
   const cpe = panel.cpeAll != null ? (panel.cpeAll * 100).toFixed(4) : "—";
   const pstate = admin.panel || {};
+
+  const columns = useMemo(
+    () => [
+      {
+        id: "locus",
+        header: "Locus",
+        accessorKey: "locusName",
+        cell: (c) => <span className="loc">{c.getValue()}</span>,
+      },
+      {
+        id: "tier",
+        header: "Tier",
+        accessorKey: "tier",
+        cell: (c) => (
+          <span className={`tier ${c.getValue()}`}>
+            {TIER_LABEL[c.getValue()] || c.getValue()}
+          </span>
+        ),
+      },
+      {
+        id: "alleleRange",
+        header: "Allele range",
+        enableSorting: false,
+        cell: (c) => {
+          const l = c.row.original;
+          return (
+            <span className="mono">
+              {l.alleleRange ? l.alleleRange.join("–") : "—"}
+            </span>
+          );
+        },
+      },
+      {
+        id: "na",
+        header: "Na",
+        accessorFn: (l) => l.na ?? 0,
+        meta: { align: "end" },
+        cell: (c) => <span className="mono">{c.row.original.na}</span>,
+      },
+      {
+        id: "he",
+        header: "He",
+        accessorFn: (l) => l.He ?? 0,
+        meta: { align: "end" },
+        cell: (c) => (
+          <span className="mono">{(c.row.original.He ?? 0).toFixed(3)}</span>
+        ),
+      },
+      {
+        id: "pic",
+        header: "PIC",
+        accessorFn: (l) => l.PIC ?? 0,
+        meta: { align: "end" },
+        cell: (c) => (
+          <span className="mono">{(c.row.original.PIC ?? 0).toFixed(3)}</span>
+        ),
+      },
+      {
+        id: "pe",
+        header: "PE",
+        accessorFn: (l) => l.PE ?? 0,
+        meta: { align: "end" },
+        cell: (c) => (
+          <span className="mono">{(c.row.original.PE ?? 0).toFixed(3)}</span>
+        ),
+      },
+    ],
+    [],
+  );
 
   return (
     <>
@@ -95,34 +165,14 @@ export function MarkerPanelView({ access }) {
         <Pad>
           <Overline>Loci ({loci.length})</Overline>
         </Pad>
-        <Table>
-          <div className="thead">
-            <span>Locus</span>
-            <span>Tier</span>
-            <span>Allele range</span>
-            <span>Na</span>
-            <span>He</span>
-            <span>PIC</span>
-            <span>PE</span>
-          </div>
-          <div className="tbody">
-            {loci.map((l) => (
-              <div className="trow" key={l.locusName}>
-                <span className="loc">{l.locusName}</span>
-                <span className={`tier ${l.tier}`}>
-                  {TIER_LABEL[l.tier] || l.tier}
-                </span>
-                <span className="mono">
-                  {l.alleleRange ? l.alleleRange.join("–") : "—"}
-                </span>
-                <span className="mono">{l.na}</span>
-                <span className="mono">{(l.He ?? 0).toFixed(3)}</span>
-                <span className="mono">{(l.PIC ?? 0).toFixed(3)}</span>
-                <span className="mono">{(l.PE ?? 0).toFixed(3)}</span>
-              </div>
-            ))}
-          </div>
-        </Table>
+        <CellStyles>
+          <DataTable
+            columns={columns}
+            data={loci}
+            maxHeight={460}
+            emptyMessage="No loci in this panel."
+          />
+        </CellStyles>
       </Card>
     </>
   );
@@ -222,37 +272,9 @@ const Pad = styled.div`
   padding: 14px 14px 0;
 `;
 
-const Table = styled.div`
+const CellStyles = styled.div`
   margin-top: 12px;
-  .thead,
-  .trow {
-    display: grid;
-    grid-template-columns: 1.4fr 1fr 1.1fr 0.7fr 0.9fr 0.9fr 0.9fr;
-    align-items: center;
-    gap: 10px;
-    padding: 8px 14px;
-  }
-  .thead {
-    background: var(--bg-muted, var(--surface-2));
-    border-bottom: 1px solid var(--border);
-    border-top: 1px solid var(--border);
-    font-size: var(--text-xs);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--fg-subtle);
-    font-family: var(--font-mono);
-  }
-  .tbody {
-    max-height: 460px;
-    overflow-y: auto;
-  }
-  .trow {
-    border-bottom: 1px solid var(--separator);
-    font-size: var(--text-sm);
-  }
-  .trow:hover {
-    background: var(--surface-2);
-  }
+
   .loc {
     font-family: var(--font-mono);
     font-size: var(--text-xs);

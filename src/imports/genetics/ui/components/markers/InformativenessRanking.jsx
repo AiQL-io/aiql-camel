@@ -53,7 +53,9 @@ export function InformativenessRanking({ perLocus, selected, onSelect }) {
                     className="fill"
                     style={{
                       width: `${(l[metric] / max) * 100}%`,
-                      background: weak ? "var(--danger)" : "var(--accent)",
+                      background: weak
+                        ? "var(--danger)"
+                        : "var(--aiql-bar-gradient)",
                     }}
                   />
                 </span>
@@ -163,6 +165,13 @@ const Root = styled.div`
   .fill {
     display: block;
     height: 100%;
+    transform-origin: left center;
+    animation: aiql-grow-x 720ms cubic-bezier(0.2, 0.75, 0.25, 1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fill {
+      animation: none;
+    }
   }
   .row b {
     font-family: var(--font-mono);

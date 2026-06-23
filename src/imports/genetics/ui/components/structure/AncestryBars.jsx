@@ -31,7 +31,15 @@ export function AncestryBars({ points, k, breeds, maxCols = 260 }) {
 
   return (
     <Root>
-      <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        preserveAspectRatio="none"
+        className="aiql-anim-grow"
+        style={{
+          transformOrigin: "bottom",
+          animation: "aiql-grow-y 700ms cubic-bezier(0.2, 0.75, 0.25, 1)",
+        }}
+      >
         {cols.map((p, i) => {
           let y = 0;
           return (

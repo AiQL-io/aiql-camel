@@ -1,13 +1,26 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useId, useMemo, useState } from "react";
 import styled from "styled-components";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+} from "recharts";
 import { Card } from "@/imports/core/components/Card.jsx";
 import { Gauge } from "@/imports/core/components/Gauge.jsx";
 import { BarList } from "@/imports/core/components/BarList.jsx";
-import { Sparkline } from "@/imports/core/components/Sparkline.jsx";
 import { SegmentedControl } from "@/imports/core/components/SegmentedControl.jsx";
 import { Overline } from "@/imports/core/components/Overline.jsx";
+import {
+  AXIS,
+  BRAND,
+  tooltipStyle,
+} from "@/imports/core/components/charts/chartTheme.js";
+import { useContainerWidth } from "@/imports/core/components/charts/useChartSize.js";
 import { useAlerts } from "@/imports/integrity/state/alertStore.js";
 
 const MONTHS = [
@@ -29,6 +42,8 @@ export function DataQualityView({ access }) {
   const q = useMemo(() => access.qualityMetrics(), [access]);
   const { alerts } = useAlerts(access);
   const [dim, setDim] = useState("region");
+  const [burnRef, burnWidth] = useContainerWidth();
+  const burnId = useId().replace(/:/g, "");
 
   const burn = useMemo(() => {
     const byMonth = new Map();
@@ -117,7 +132,7 @@ export function DataQualityView({ access }) {
     Math.max(0, q.pctProfiled * 0.4 + q.pctVerified * 0.6 - alertLoad * 0.5),
   );
 
-  const sparkOpen = burn.map((b) => b.open);
+  const burnHeight = 150;
 
   return (
     <>
@@ -170,15 +185,88 @@ export function DataQualityView({ access }) {
           </div>
           {burn.length > 1 ? (
             <>
-              <Sparkline
-                data={sparkOpen}
-                width={420}
-                height={64}
-                color="var(--danger)"
-              />
-              <div className="bscale">
-                <span>{burn[0]?.label}</span>
-                <span>{burn[burn.length - 1]?.label}</span>
+              <div
+                ref={burnRef}
+                style={{ width: "100%", height: burnHeight, marginTop: 8 }}
+              >
+                {burnWidth > 0 && (
+                  <AreaChart
+                    width={burnWidth}
+                    height={burnHeight}
+                    data={burn}
+                    margin={{ top: 8, right: 8, bottom: 0, left: -16 }}
+                  >
+                    <defs>
+                      <linearGradient
+                        id={`burn_${burnId}`}
+                        x1="0"
+                        y1="0"
+                        x2="0"
+                        y2="1"
+                      >
+                        <stop
+                          offset="0%"
+                          stopColor={BRAND.red}
+                          stopOpacity={0.32}
+                        />
+                        <stop
+                          offset="80%"
+                          stopColor={BRAND.red}
+                          stopOpacity={0.04}
+                        />
+                        <stop
+                          offset="100%"
+                          stopColor={BRAND.red}
+                          stopOpacity={0}
+                        />
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke={AXIS.stroke}
+                      vertical={false}
+                    />
+                    <XAxis
+                      dataKey="label"
+                      tickLine={false}
+                      axisLine={{ stroke: AXIS.stroke }}
+                      tick={{
+                        fontSize: AXIS.fontSize,
+                        fontFamily: AXIS.fontFamily,
+                        fill: AXIS.tick,
+                      }}
+                    />
+                    <YAxis
+                      allowDecimals={false}
+                      tickLine={false}
+                      axisLine={false}
+                      width={36}
+                      tick={{
+                        fontSize: AXIS.fontSize,
+                        fontFamily: AXIS.fontFamily,
+                        fill: AXIS.tick,
+                      }}
+                    />
+                    <Tooltip
+                      cursor={{ stroke: AXIS.stroke }}
+                      contentStyle={tooltipStyle}
+                      formatter={(v, name) => [
+                        v,
+                        name === "open" ? "open alerts" : "detected",
+                      ]}
+                    />
+                    <Area
+                      type="monotone"
+                      dataKey="open"
+                      stroke={BRAND.red}
+                      strokeWidth={2}
+                      fill={`url(#burn_${burnId})`}
+                      dot={false}
+                      isAnimationActive
+                      animationDuration={700}
+                    />
+                  </AreaChart>
+                )}
               </div>
               <p className="bnote">
                 Cumulative open alerts by detection month. As resolutions are
@@ -294,14 +382,6 @@ const TwoUp = styled.div`
     color: var(--danger);
     font-family: var(--font-mono);
   }
-  .bscale {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 6px;
-    font-size: var(--text-xs);
-    color: var(--fg-subtle);
-    font-family: var(--font-mono);
-  }
   .bnote {
     margin-top: 10px;
     font-size: var(--text-xs);
@@ -335,7 +415,12 @@ const CBar = styled.span`
   display: block;
   height: 100%;
   width: ${(p) => p.$pct}%;
-  background: var(--status-success);
+  background: var(--aiql-bar-gradient);
+  transform-origin: left center;
+  animation: aiql-grow-x 720ms cubic-bezier(0.2, 0.75, 0.25, 1);
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+  }
 `;
 
 const Break = styled.div`

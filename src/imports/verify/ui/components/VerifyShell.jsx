@@ -7,6 +7,7 @@ import styled from "styled-components";
 import { Overline } from "@/imports/core/components/Overline.jsx";
 import { Chip } from "@/imports/core/components/Chip.jsx";
 import { Icon } from "@/imports/core/components/Icon.jsx";
+import { BackToHome } from "@/imports/core/components/BackToHome.jsx";
 import { useI18n } from "@/imports/core/providers/I18nProvider.jsx";
 import { useCases } from "@/imports/verify/state/caseStore.js";
 
@@ -32,6 +33,7 @@ export function VerifyShell({ children }) {
 
   return (
     <Wrap>
+      <BackToHome />
       <header className="vh">
         <div>
           <Overline>{t("verify.overline")}</Overline>

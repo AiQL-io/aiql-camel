@@ -17,7 +17,7 @@ export function ModuleLauncher() {
 
       <Grid $min={300}>
         {LIVE_MODULES.map((m) => (
-          <ModuleCard key={m.href} href={m.href} $accent={m.accent}>
+          <ModuleCard key={m.href} href={m.href}>
             <div className="inner">
               <div className="top">
                 <span className="n">{m.n}</span>
@@ -96,7 +96,6 @@ const ModuleCard = styled(Link)`
 
   .inner {
     padding: 18px 20px;
-    border-inline-start: 2px solid ${(p) => p.$accent || "transparent"};
   }
   .top {
     display: flex;

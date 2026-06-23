@@ -6,6 +6,7 @@ import { TopBar } from "./TopBar.jsx";
 import { NavRail } from "./NavRail.jsx";
 import { CommandPalette } from "./CommandPalette.jsx";
 import { AssistantBar } from "@/imports/core/components/AssistantBar.jsx";
+import { CommandCenterPanel } from "@/imports/command/ui/components/CommandCenterPanel.jsx";
 import { useI18n } from "@/imports/core/providers/I18nProvider.jsx";
 
 export function Shell({ title, crumbs, assistant = true, children }) {
@@ -37,6 +38,7 @@ export function Shell({ title, crumbs, assistant = true, children }) {
         open={searchOpen}
         onClose={() => setSearchOpen(false)}
       />
+      <CommandCenterPanel />
       {assistant && (
         <div className="assistant">
           <AssistantBar

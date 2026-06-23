@@ -7,6 +7,7 @@ import styled from "styled-components";
 import { Overline } from "@/imports/core/components/Overline.jsx";
 import { Icon } from "@/imports/core/components/Icon.jsx";
 import { useRole } from "@/imports/core/providers/RoleProvider.jsx";
+import { BackToHome } from "@/imports/core/components/BackToHome.jsx";
 import { useI18n } from "@/imports/core/providers/I18nProvider.jsx";
 
 const NAV = [
@@ -23,6 +24,7 @@ export function AdminShell({ children }) {
   const isAdmin = can("manageAdmin");
   return (
     <Wrap>
+      <BackToHome />
       <header className="ah">
         <Overline>{t("admin.overline")}</Overline>
         <h1>{t("nav.admin")}</h1>

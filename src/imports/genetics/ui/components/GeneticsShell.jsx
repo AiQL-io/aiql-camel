@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import styled from "styled-components";
 import { Overline } from "@/imports/core/components/Overline.jsx";
 import { SegmentedControl } from "@/imports/core/components/SegmentedControl.jsx";
+import { BackToHome } from "@/imports/core/components/BackToHome.jsx";
 import { useI18n } from "@/imports/core/providers/I18nProvider.jsx";
 import {
   useGeneticsState,
@@ -47,6 +48,7 @@ export function GeneticsShell({ access, children }) {
 
   return (
     <Wrap>
+      <BackToHome />
       <header className="gh">
         <Overline>{t("genetics.overline")}</Overline>
         <h1>{t("nav.genetics")}</h1>

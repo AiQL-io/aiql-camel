@@ -11,8 +11,7 @@ export function CommandHeader({ period, setPeriod, executive, setExecutive }) {
   return (
     <Header>
       <div>
-        <Overline>National genetic intelligence</Overline>
-        <h1>{t("command.title")}</h1>
+        <Overline>{t("command.subtitle")}</Overline>
       </div>
       <div className="controls">
         <SegmentedControl
@@ -40,22 +39,14 @@ export function CommandHeader({ period, setPeriod, executive, setExecutive }) {
 
 const Header = styled.div`
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
   flex-wrap: wrap;
 
-  h1 {
-    font-size: var(--text-2xl);
-    line-height: 40px;
-    font-weight: var(--weight-medium);
-    letter-spacing: -0.02em;
-    margin-top: 8px;
-  }
   .controls {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-top: 21px;
   }
 `;

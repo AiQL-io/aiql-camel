@@ -4,6 +4,9 @@ const en = {
   "app.datasetIndicator": "Synthetic dataset · {count} profiles",
 
   "nav.commandCenter": "Command Center",
+  "nav.home": "Home",
+  "nav.dashboard": "Command Center",
+  "nav.backToHome": "Back to home",
   "nav.registry": "DNA Identity Registry",
   "nav.verify": "Verification",
   "nav.genetics": "Population Genetics",

@@ -1,5 +1,5 @@
-import CommandCenterPage from "@/imports/command/ui/pages/CommandCenterPage.jsx";
+import HomePage from "@/imports/command/ui/pages/HomePage.jsx";
 
 export default function Page() {
-  return <CommandCenterPage />;
+  return <HomePage />;
 }

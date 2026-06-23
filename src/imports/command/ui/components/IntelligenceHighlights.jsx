@@ -90,7 +90,8 @@ export function IntelligenceHighlights({
 
 const Row = styled.div`
   display: grid;
-  grid-template-columns: ${(p) => (p.$executive ? "1fr 1fr" : "1fr 1fr 1fr")};
+  grid-template-columns: 1fr;
+  align-items: start;
   gap: 16px;
   margin-top: 16px;
 `;
@@ -102,7 +103,7 @@ const AlertList = styled.div`
 
   a {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 10px;
   }
   a > :first-child {
@@ -174,7 +175,7 @@ const Feed = styled.div`
 
   a {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 10px;
   }
   .ic {

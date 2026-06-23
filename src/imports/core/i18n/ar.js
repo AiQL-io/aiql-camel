@@ -4,6 +4,9 @@ const ar = {
   "app.datasetIndicator": "بيانات تجريبية · {count} ملف",
 
   "nav.commandCenter": "مركز القيادة",
+  "nav.home": "الرئيسية",
+  "nav.dashboard": "مركز القيادة",
+  "nav.backToHome": "العودة إلى الرئيسية",
   "nav.registry": "سجل الهوية الوراثية",
   "nav.verify": "التحقق",
   "nav.genetics": "وراثة المجتمعات",

@@ -10,6 +10,7 @@ import { SearchPill } from "@/imports/core/components/SearchPill.jsx";
 import { useTheme } from "@/imports/core/providers/ThemeProvider.jsx";
 import { useI18n } from "@/imports/core/providers/I18nProvider.jsx";
 import { useRole } from "@/imports/core/providers/RoleProvider.jsx";
+import { openCommandCenter } from "@/imports/command/state/commandCenterStore.js";
 
 export function TopBar({ onOpenSearch }) {
   const { theme, toggleTheme } = useTheme();
@@ -23,6 +24,15 @@ export function TopBar({ onOpenSearch }) {
 
       <div className="actions">
         <SearchPill placeholder={t("common.search")} onClick={onOpenSearch} />
+        <button
+          type="button"
+          className="cc-btn"
+          onClick={openCommandCenter}
+          title={t("command.title")}
+        >
+          <Icon name="gauge" size={16} />
+          <span>{t("command.title")}</span>
+        </button>
         <div className="bell-wrap">
           <IconButton name="bell" aria-label="Notifications" />
           <span className="bell-badge" />
@@ -109,12 +119,35 @@ const Header = styled.header`
     .profile-meta {
       display: none;
     }
+    .cc-btn span {
+      display: none;
+    }
   }
 
   .actions {
     display: flex;
     align-items: center;
     gap: 10px;
+  }
+  .cc-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-pill);
+    background: var(--surface);
+    color: var(--fg-secondary);
+    font-size: var(--text-sm);
+    cursor: pointer;
+    transition:
+      border-color 120ms ease,
+      color 120ms ease;
+  }
+  .cc-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
   }
   .bell-wrap {
     position: relative;

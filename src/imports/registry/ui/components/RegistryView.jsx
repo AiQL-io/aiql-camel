@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import styled from "styled-components";
 import { Overline } from "@/imports/core/components/Overline.jsx";
+import { BackToHome } from "@/imports/core/components/BackToHome.jsx";
 import { Button } from "@/imports/core/components/Button.jsx";
 import { Chip } from "@/imports/core/components/Chip.jsx";
 import { Icon } from "@/imports/core/components/Icon.jsx";
@@ -97,6 +98,7 @@ export function RegistryView({ access }) {
 
   return (
     <>
+      <BackToHome />
       <Head>
         <div>
           <Overline>{t("registry.overline")}</Overline>

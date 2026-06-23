@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import styled from "styled-components";
 import { Overline } from "@/imports/core/components/Overline.jsx";
+import { BackToHome } from "@/imports/core/components/BackToHome.jsx";
 import { useI18n } from "@/imports/core/providers/I18nProvider.jsx";
 
 const NAV = [
@@ -17,6 +18,7 @@ export function IntegrityShell({ children }) {
   const { t } = useI18n();
   return (
     <Wrap>
+      <BackToHome />
       <header className="ih">
         <Overline>{t("integrity.overline")}</Overline>
         <h1>{t("nav.integrity")}</h1>

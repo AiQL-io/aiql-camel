@@ -1,9 +1,9 @@
 export const MODULES = [
   {
-    id: "command",
+    id: "home",
     href: "/",
     icon: "squares-four",
-    labelKey: "nav.commandCenter",
+    labelKey: "nav.home",
   },
   {
     id: "registry",
@@ -40,8 +40,8 @@ export const MODULES = [
 ];
 
 export function activeModuleId(pathname) {
-  if (!pathname || pathname === "/") return "command";
+  if (!pathname || pathname === "/") return "home";
   const seg = "/" + pathname.split("/").filter(Boolean)[0];
   const match = MODULES.find((m) => m.href === seg);
-  return match ? match.id : "command";
+  return match ? match.id : "home";
 }

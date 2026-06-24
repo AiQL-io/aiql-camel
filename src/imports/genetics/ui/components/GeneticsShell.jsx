@@ -24,6 +24,7 @@ const NAV = [
   { href: "/genetics/clusters", labelKey: "genetics.tab.clusters" },
   { href: "/genetics/cohorts", labelKey: "genetics.tab.cohorts" },
   { href: "/genetics/markers", labelKey: "genetics.tab.markers" },
+  { href: "/genetics/evo", labelKey: "genetics.tab.evo" },
   { href: "/genetics/methods", labelKey: "genetics.tab.methods" },
 ];
 
@@ -31,6 +32,7 @@ export function GeneticsShell({ access, children }) {
   const pathname = usePathname();
   const { t } = useI18n();
   const { state, scope, audience, setAudience } = useGeneticsState();
+  const isEvo = pathname.startsWith("/genetics/evo");
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -54,7 +56,7 @@ export function GeneticsShell({ access, children }) {
         <h1>{t("nav.genetics")}</h1>
       </header>
 
-      <nav className="subnav">
+      <nav className={isEvo ? "subnav bare" : "subnav"}>
         {NAV.map((n) => {
           const active = n.exact
             ? pathname === n.href
@@ -67,22 +69,26 @@ export function GeneticsShell({ access, children }) {
         })}
       </nav>
 
-      <div className="bar">
-        {access && <ScopeBar access={access} />}
-        <div className="audience">
-          <span className="al">{t("common.audience")}</span>
-          <SegmentedControl
-            value={audience}
-            onChange={setAudience}
-            options={[
-              { value: "analyst", label: t("common.analyst") },
-              { value: "executive", label: t("common.executive") },
-            ]}
-          />
-        </div>
-      </div>
+      {!isEvo && (
+        <>
+          <div className="bar">
+            {access && <ScopeBar access={access} />}
+            <div className="audience">
+              <span className="al">{t("common.audience")}</span>
+              <SegmentedControl
+                value={audience}
+                onChange={setAudience}
+                options={[
+                  { value: "analyst", label: t("common.analyst") },
+                  { value: "executive", label: t("common.executive") },
+                ]}
+              />
+            </div>
+          </div>
 
-      <p className="proto-note">{t("genetics.protoNote")}</p>
+          <p className="proto-note">{t("genetics.protoNote")}</p>
+        </>
+      )}
 
       <div className="body">{children}</div>
       <MethodsDrawer />
@@ -111,8 +117,10 @@ const Wrap = styled.div`
     display: flex;
     gap: 4px;
     margin-top: 20px;
-    border-bottom: 1px solid var(--border);
     flex-wrap: wrap;
+  }
+  .subnav.bare {
+    border-bottom: none;
   }
   .subnav a {
     padding: 10px 14px;

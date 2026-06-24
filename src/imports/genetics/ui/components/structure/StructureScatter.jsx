@@ -90,6 +90,15 @@ export function StructureScatter({
   const tsx = (x) => vx(sx(x));
   const tsy = (y) => vy(sy(y));
 
+  const colorFor = (p) => {
+    if (colorBy === "genetic") return bc[p.geneticBreed];
+    if (colorBy === "region") return rc[p.region] || "var(--fg-muted)";
+    if (colorBy === "owner")
+      return PALETTE[Math.abs(hashStr(p.ownerId)) % PALETTE.length];
+    if (colorBy === "f") return fRamp(p.f);
+    return bc[p.declaredBreed];
+  };
+
   const hullsByGroup = (() => {
     if (!hulls) return [];
     const keyOf = (p) =>
@@ -115,15 +124,6 @@ export function StructureScatter({
       }))
       .filter((h) => h.poly.length >= 3);
   })();
-
-  const colorFor = (p) => {
-    if (colorBy === "genetic") return bc[p.geneticBreed];
-    if (colorBy === "region") return rc[p.region] || "var(--fg-muted)";
-    if (colorBy === "owner")
-      return PALETTE[Math.abs(hashStr(p.ownerId)) % PALETTE.length];
-    if (colorBy === "f") return fRamp(p.f);
-    return bc[p.declaredBreed];
-  };
 
   const toData = (clientX, clientY, rect) => {
     const px = ((clientX - rect.left) / rect.width) * W;

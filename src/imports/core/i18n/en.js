@@ -42,6 +42,7 @@ const en = {
   "genetics.tab.clusters": "Clusters",
   "genetics.tab.cohorts": "Cohorts",
   "genetics.tab.markers": "Markers",
+  "genetics.tab.evo": "Evo 2",
   "genetics.tab.methods": "Methods",
   "genetics.protoNote":
     "Prototype: diversity and structure metrics on this module are illustrative, generated from the synthetic dataset to demonstrate the analytics workflow — not computed from production genotypes.",

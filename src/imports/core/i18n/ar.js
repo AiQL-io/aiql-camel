@@ -42,6 +42,7 @@ const ar = {
   "genetics.tab.clusters": "التجمعات",
   "genetics.tab.cohorts": "المجموعات",
   "genetics.tab.markers": "العلامات الوراثية",
+  "genetics.tab.evo": "إيفو 2",
   "genetics.tab.methods": "المنهجيات",
   "genetics.protoNote":
     "نموذج أولي: مقاييس التنوع والبنية في هذه الوحدة توضيحية، مولّدة من مجموعة البيانات التجريبية لعرض سير العمل التحليلي — وليست محسوبة من بيانات وراثية إنتاجية.",

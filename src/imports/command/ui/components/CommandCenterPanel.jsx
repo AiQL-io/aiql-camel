@@ -74,7 +74,10 @@ const Panel = styled.aside`
   display: flex;
   flex-direction: column;
   transform: translateX(${(p) => (p.$open ? "0" : "100%")});
-  transition: transform 240ms cubic-bezier(0.4, 0, 0.2, 1);
+  visibility: ${(p) => (p.$open ? "visible" : "hidden")};
+  transition:
+    transform 240ms cubic-bezier(0.4, 0, 0.2, 1),
+    visibility 0s linear ${(p) => (p.$open ? "0s" : "240ms")};
 
   html[dir="rtl"] & {
     transform: translateX(${(p) => (p.$open ? "0" : "-100%")});

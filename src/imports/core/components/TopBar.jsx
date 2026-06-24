@@ -20,7 +20,7 @@ export function TopBar({ onOpenSearch }) {
 
   return (
     <Header>
-      <Logo variant="full" size={36} productName={t("app.name")} />
+      <Logo variant="full" size={36} />
 
       <div className="actions">
         <SearchPill placeholder={t("common.search")} onClick={onOpenSearch} />

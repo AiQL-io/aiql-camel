@@ -12,23 +12,24 @@ import { LIVE_MODULES } from "./data.js";
 export function ModuleLauncher() {
   return (
     <Section>
-      <Overline>Modules · jump into any surface</Overline>
       <h2>Where would you like to work today?</h2>
 
       <Grid $min={300}>
         {LIVE_MODULES.map((m) => (
-          <ModuleCard key={m.href} href={m.href}>
+          <ModuleCard
+            key={m.href}
+            href={m.href}
+            style={{ "--mc-accent": m.accent || "var(--accent)" }}
+          >
             <div className="inner">
               <div className="top">
+                <span className="ic">
+                  <Icon name={m.icon} size={20} color="var(--mc-accent)" />
+                </span>
                 <span className="n">{m.n}</span>
-                <Icon name={m.icon} size={18} color="var(--fg-subtle)" />
               </div>
               <h3>{m.title}</h3>
               <p>{m.desc}</p>
-              <div className="foot">
-                <div className="stat">{m.stat}</div>
-                <div className="sub">{m.sub}</div>
-              </div>
             </div>
           </ModuleCard>
         ))}
@@ -55,13 +56,12 @@ export function ModuleLauncher() {
 }
 
 const Section = styled.div`
-  margin-top: 36px;
+  margin-top: 28px;
 
   h2 {
-    font-size: var(--text-lg);
-    line-height: 24px;
-    font-weight: var(--weight-medium);
-    margin-top: 8px;
+    font-size: var(--text-xl);
+    line-height: 28px;
+    font-weight: var(--weight-semibold);
   }
   .roadmap-label {
     margin-top: 28px;
@@ -84,54 +84,52 @@ const ModuleCard = styled(Link)`
   overflow: hidden;
   background: var(--surface);
   border: 1px solid var(--border);
+  border-inline-start: 5px solid var(--mc-accent);
   border-radius: var(--radius-lg);
   transition:
     box-shadow 140ms ease,
-    border-color 140ms ease;
+    border-color 140ms ease,
+    transform 140ms ease;
 
   &:hover {
     box-shadow: var(--shadow-md);
     border-color: var(--separator-2);
+    border-inline-start-color: var(--mc-accent);
+    transform: translateY(-2px);
   }
 
   .inner {
-    padding: 18px 20px;
+    padding: 20px 22px;
   }
   .top {
     display: flex;
     align-items: center;
     justify-content: space-between;
   }
+  .ic {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--mc-accent) 12%, transparent);
+  }
   .n {
     font-family: var(--font-mono);
     font-size: var(--text-xs);
-    color: var(--fg-subtle);
+    color: var(--mc-accent);
   }
   h3 {
-    font-size: var(--text-sm);
-    font-weight: var(--weight-medium);
-    margin-top: 14px;
+    font-size: var(--text-lg);
+    font-weight: var(--weight-semibold);
+    margin-top: 16px;
   }
   p {
-    font-size: var(--text-sm);
+    font-size: var(--text-base);
     color: var(--fg-secondary);
-    line-height: 20px;
-    margin-top: 6px;
-  }
-  .foot {
-    border-top: 1px solid var(--border);
-    margin-top: 16px;
-    padding-top: 12px;
-  }
-  .stat {
-    font-size: var(--text-sm);
-    font-weight: var(--weight-medium);
-  }
-  .sub {
-    font-family: var(--font-mono);
-    font-size: var(--text-xs);
-    color: var(--fg-subtle);
-    margin-top: 4px;
+    line-height: 22px;
+    margin-top: 8px;
   }
 `;
 

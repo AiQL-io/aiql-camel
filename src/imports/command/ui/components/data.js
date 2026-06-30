@@ -130,6 +130,7 @@ export const LIVE_MODULES = [
     desc: "Every camel, anchored to its DNA fingerprint.",
     stat: "Browse & search",
     sub: "national register",
+    accent: "var(--aiql-mark-aqua)",
   },
   {
     n: "02",
@@ -149,6 +150,7 @@ export const LIVE_MODULES = [
     desc: "Diversity, inbreeding & structure intelligence.",
     stat: "Diversity analytics",
     sub: "national scale",
+    accent: "var(--aiql-mark-violet)",
   },
   {
     n: "04",
@@ -168,6 +170,7 @@ export const LIVE_MODULES = [
     desc: "QR-verifiable certificates & population reports.",
     stat: "Generate & verify",
     sub: "bilingual",
+    accent: "var(--status-success)",
   },
   {
     n: "06",
@@ -177,5 +180,6 @@ export const LIVE_MODULES = [
     desc: "Users, marker panel, reference data, audit log.",
     stat: "5 roles",
     sub: "panel v1",
+    accent: "var(--fg-tertiary)",
   },
 ];
